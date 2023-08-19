@@ -8,7 +8,8 @@ Simple utility generator utilizing **github's graphql API** to request cards fro
 
 Implemented :
     - [x] Github api key authentication
-    - [ ] Graphql request to get cards
+    - [X] Graphql request to get cards
+      - [ ] Handle paging
     - [ ] Cards parsing
     - [ ] Markdown generating
 
@@ -18,3 +19,5 @@ Implemented :
 - [ ] Add manual ordering feature
 - [ ] Automatic numbering
 - [ ] Use [anyhow](https://github.com/dtolnay/anyhow) for error handling
+- [ ] Restructure serde datamodel module
+    - ie: `model` module ?
