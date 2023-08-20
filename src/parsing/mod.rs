@@ -3,12 +3,12 @@ use regress::{Regex, Flags, Match};
 use crate::github::card;
 
 // Section parsing regex's
-const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\n)(?:\W|.)*?(?=\n# *Description)";
-const DESCRIPTION_REGEX: &str = r"(?<=^# *Description$\n)(?:\W|.)*?(?=\n# *DOD)";
-const DOD_REGEX: &str = r"(?<=^# *DOD$\n)(?:\W|.)*";
+const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
+const DESCRIPTION_REGEX: &str = r"(?<=^# *Description$\s+)\S(?:\s|.)*?(?=\s+# *DOD)";
+const DOD_REGEX: &str = r"(?<=^# *DOD$\s+)\S(?:\s|.)*\S$";
 
 // User wish parsing regex's
-const USER_WISH_INTERIOR: &str = r"";
+const USER_WISH_INTERIOR: &str = r"/\*\*as the:\*\*\s+?(.+?$)(?:\s)+?\*\*i want to:\*\*((?:.|\s)+.+)/mi";
 
 // Flags to be used
 const FLAGS: Flags = Flags {
@@ -19,12 +19,14 @@ const FLAGS: Flags = Flags {
     unicode: false
 };
 
+#[derive(Debug)]
 pub enum CardSection {
     UserWish,
     Description,
     Dod
 }
 
+#[derive(Debug)]
 pub enum ParsingError {
     SectionMissing(CardSection),
     SectionContainsHeader(CardSection),
@@ -70,11 +72,25 @@ impl PldCard {
         let description_regex = Regex::with_flags(DESCRIPTION_REGEX, FLAGS).unwrap();
         let dod_regex = Regex::with_flags(DOD_REGEX, FLAGS).unwrap();
 
-        let user_wish = match user_wish_regex.find(&card_body) {
+        let wish = match user_wish_regex.find(&card_body) {
             Some(m) => UserWish::from_markdown(&card_body[m.range])?,
             None => return Err(ParsingError::SectionMissing(CardSection::UserWish))
         };
 
-        
+        let description = match description_regex.find(&card_body) {
+            Some(m) => (&card_body[m.range]).to_string(),
+            None => return Err(ParsingError::SectionMissing(CardSection::Description))
+        };
+
+        let dod = match dod_regex.find(&card_body) {
+            Some(m) => (&card_body[m.range]).to_string(),
+            None => return Err(ParsingError::SectionMissing(CardSection::Dod))
+        };
+
+        Ok(PldCard {
+            wish,
+            description,
+            dod
+        })
     }
 }
