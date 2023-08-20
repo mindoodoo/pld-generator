@@ -21,3 +21,4 @@ Implemented :
 - [ ] Use [anyhow](https://github.com/dtolnay/anyhow) for error handling
 - [ ] Restructure serde datamodel module
     - ie: `model` module ?
+- [ ] Github card linter &rarr; automatic formatter

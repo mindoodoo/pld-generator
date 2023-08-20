@@ -1,4 +1,5 @@
 pub mod github;
+pub mod parsing;
 
 use github::ProjectId;
 
