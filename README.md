@@ -7,11 +7,12 @@ Simple utility generator utilizing **github's graphql API** to request cards fro
 *Still in development*
 
 Implemented :
-    - [x] Github api key authentication
-    - [X] Graphql request to get cards
-      - [ ] Handle paging
-    - [ ] Cards parsing
-    - [ ] Markdown generating
+
+- [x] Github api key authentication
+- [X] Graphql request to get cards
+  - [ ] Handle paging
+- [ ] Cards parsing
+- [ ] Markdown generating
 
 ## Improvements
 
