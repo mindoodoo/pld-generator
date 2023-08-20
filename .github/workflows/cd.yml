@@ -1,0 +1,22 @@
+name: CD
+
+on: push
+  # push:
+  #   branches:
+  #     - "main"
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Build All Binaries
+        run: cargo build --release --verbose
+      - uses: "marvinpinto/action-automatic-releases@latest"
+        with:
+          repo_token: "${{ secrets.TOKEN }}"
+          automatic_release_tag: "latest"
+          prerelease: true
+          title: "Latest Release"
+          files: |
+            ./target/release/pld-generator
