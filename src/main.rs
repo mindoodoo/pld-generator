@@ -1,10 +1,11 @@
 pub mod github;
 pub mod parsing;
 
-use github::ProjectId;
+use github::{ProjectId, card};
+use parsing::PldCard;
 
 use dotenv::dotenv;
-use std::env;
+use std::{env, fs};
 use tokio;
 
 // This is mostly just me taking this opportunity to try out macros in rust
@@ -24,7 +25,10 @@ async fn main() {
             .expect("Error parsing PROJECT_NUM into integer")
     };
 
+    let card_content = fs::read_to_string("./card_format.md").unwrap();
+    let pld_card = PldCard::from_markdown(card_content).expect("Error parsing card");
 
-    let client = github::ProjectsClient::new(&api_key, project);
-    client.get_cards().await;
+    println!("{:?}", pld_card);
+    // let client = github::ProjectsClient::new(&api_key, project);
+    // client.get_cards().await;
 }
