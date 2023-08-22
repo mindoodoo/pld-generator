@@ -8,7 +8,7 @@ const DESCRIPTION_REGEX: &str = r"(?<=^# *Description$\s+)\S(?:\s|.)*?(?=\s+# *D
 const DOD_REGEX: &str = r"(?<=^# *DOD$\s+)\S(?:\s|.)*\S$";
 
 // User wish parsing regex's
-const USER_WISH_INTERIOR: &str = r"/\*\*as the:\*\*\s+?(.+?$)(?:\s)+?\*\*i want to:\*\*((?:.|\s)+.+)/mi";
+const USER_WISH_INTERIOR: &str = r"\*\*as the:\*\*\s+?(.+?$)(?:\s)+?\*\*i want to:\*\*((?:.|\s)+.+)";
 
 // Flags to be used
 const FLAGS: Flags = Flags {
