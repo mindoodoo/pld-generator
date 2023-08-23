@@ -48,12 +48,12 @@ impl UserWish {
         let user_regex = Regex::with_flags(USER_WISH_INTERIOR, FLAGS).unwrap();
         
         let matches = user_regex.find(user_wish).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
-        let user_group = matches.group(0).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
-        let action_group = matches.group(1).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
+        let user_group = matches.group(1).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
+        let action_group = matches.group(2).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
         
         Ok(UserWish {
-            user: user_wish[user_group].to_string(),
-            action: user_wish[action_group].to_string()
+            user: user_wish[user_group].trim().to_string(),
+            action: user_wish[action_group].trim().to_string()
         })
     }
 }
@@ -78,12 +78,12 @@ impl PldCard {
         };
 
         let description = match description_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).to_string(),
+            Some(m) => (&card_body[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Description))
         };
 
         let dod = match dod_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).to_string(),
+            Some(m) => (&card_body[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Dod))
         };
 

@@ -28,7 +28,7 @@ async fn main() {
     let card_content = fs::read_to_string("./card_format.md").unwrap();
     let pld_card = PldCard::from_markdown(card_content).expect("Error parsing card");
 
-    println!("{:?}", pld_card);
+    println!("{:#?}", pld_card);
     // let client = github::ProjectsClient::new(&api_key, project);
     // client.get_cards().await;
 }
