@@ -26,7 +26,7 @@ async fn main() {
     };
 
     let gh_client = github::ProjectsClient::new(&api_key, project);
-    let lucid_client = lucid::LucidClient::new(
+    let mut lucid_client = lucid::LucidClient::new(
         &lookup_env!("LUCID_ACCESS_TOKEN"),
         &lookup_env!("LUCID_REFRESH_TOKEN"),
         &lookup_env!("LUCID_CLIENT_ID"),
@@ -34,4 +34,5 @@ async fn main() {
 
     // gh_client.get_cards().await;
     println!("{:?}", lucid_client.check_access_token(&lookup_env!("LUCID_REFRESH_TOKEN")).await);
+    lucid_client.refresh_token().await.expect("Error refreshing token");
 }

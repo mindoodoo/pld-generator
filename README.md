@@ -21,6 +21,8 @@ Implemented :
 - [ ] Use [anyhow](https://github.com/dtolnay/anyhow) for error handling
 - [ ] Restructure serde datamodel module
     - ie: `model` module ?
+- [ ] Improve deserialization error handling
+  - For the time being it will the deserialization will fail in a lot of places if the response is of the error type, this should be better managed by checking the status code first
 
 ## Getting access token
 
