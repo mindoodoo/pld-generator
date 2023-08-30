@@ -35,5 +35,5 @@ async fn main() {
     // gh_client.get_cards().await;
     println!("{:?}", lucid_client.check_access_token(&lookup_env!("LUCID_ACCESS_TOKEN")).await);
     // lucid_client.refresh_token().await.expect("Error refreshing token");
-    lucid_client.export_image("test.png", "f2181d69-6dac-4d6e-82d1-9bc2180d88eb", 2).await.unwrap();
+    lucid_client.get_page_count("f2181d69-6dac-4d6e-82d1-9bc2180d88eb").await.unwrap();
 }

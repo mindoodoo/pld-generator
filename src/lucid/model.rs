@@ -1,4 +1,5 @@
 use serde::{Deserialize, Serialize};
+use serde_json::Value;
 
 #[derive(Serialize)]
 pub struct IntrospectBody {
@@ -7,20 +8,20 @@ pub struct IntrospectBody {
     pub client_secret: String
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize)]
 pub struct IntrospectOk {
     pub active: bool,
-    user_id: i64,
-    client_id: String,
-    token_type: String,
-    scope: String,
-    expires_in: i64,
-    expires: i64,
+    pub user_id: i64,
+    pub client_id: String,
+    pub token_type: String,
+    pub scope: String,
+    pub expires_in: i64,
+    pub expires: i64,
 }
 
 #[derive(Deserialize)]
 pub struct IntrospectErr {
-    active: bool
+    pub active: bool
 }
 
 #[derive(Deserialize)]
@@ -42,13 +43,32 @@ pub struct RefreshBody {
 #[derive(Deserialize)]
 pub struct RefreshResponse {
     pub access_token: String,
-    user_id: i64,
-    client_id: String,
+    pub user_id: i64,
+    pub client_id: String,
     pub refresh_token: String,
-    expires_in: i64,
-    expires: i64,
-    scope: String,
-    scopes: Vec<String>,
-    token_type: String,
+    pub expires_in: i64,
+    pub expires: i64,
+    pub scope: String,
+    pub scopes: Vec<String>,
+    pub token_type: String,
 }
 
+#[derive(Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct GetDocumentResponse {
+    pub document_id: String,
+    pub title: String,
+    pub edit_url: String,
+    pub view_url: String,
+    pub version: i64,
+    pub page_count: u8,
+    pub can_edit: bool,
+    pub created: String,
+    pub creator_id: i64,
+    pub last_modified: String,
+    pub last_modified_user_id: i64,
+    pub custom_tags: Vec<String>,
+    pub product: String,
+    pub status: String,
+    pub parent: Value,
+}

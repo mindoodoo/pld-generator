@@ -3,7 +3,7 @@ mod model;
 use reqwest::{Client, header::{HeaderMap, HeaderValue}, ClientBuilder, StatusCode, Url};
 use std::{fs::File, io::{Cursor, copy}};
 
-use model::{IntrospectResponse, IntrospectBody};
+use model::{IntrospectResponse, IntrospectBody, GetDocumentResponse};
 
 use self::model::{RefreshBody, RefreshResponse};
 
@@ -11,6 +11,7 @@ const API_VERSION: &str = "1";
 const INTROSPECT_TOKEN_ROUTE: &str = "https://api.lucid.co/oauth2/token/introspect";
 const REFRESH_TOKEN_ROUTE: &str = "https://api.lucid.co/oauth2/token";
 const EXPORT_DOCUMENT_ROUTE: &str = "https://api.lucid.co/documents/";
+const GET_DOCUMENT_ROUTE: &str = "https://api.lucid.co/documents/";
 
 pub struct OauthId {
     client_id: String,
@@ -108,6 +109,29 @@ impl LucidClient {
                 copy(&mut writer, &mut f).expect("Error copying image to file");
 
                 Ok(())
+            },
+            StatusCode::UNAUTHORIZED => Err(LucidError::ExpiredToken),
+            _ => Err(LucidError::UnexpectedResponse)
+        }
+    }
+
+    pub async fn get_page_count(&self, document_id: &str) -> Result<u8, LucidError> {
+        let query_str = format!("{}{}", GET_DOCUMENT_ROUTE, document_id);
+        
+        let resp = self.client.get(&query_str)
+            .header("Authorization", &format!("Bearer {}", self.access_token))
+            .header("Accept", "application/json")
+            .send().await.unwrap();
+
+        match resp.status() {
+            StatusCode::OK => {
+                println!("Here");
+
+                let body: GetDocumentResponse = resp.json().await.expect("Deserialization failed");
+
+                println!("Page count is : {}", body.page_count);
+
+                Ok(body.page_count)
             },
             StatusCode::UNAUTHORIZED => Err(LucidError::ExpiredToken),
             _ => Err(LucidError::UnexpectedResponse)
