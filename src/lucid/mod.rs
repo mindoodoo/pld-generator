@@ -1,7 +1,7 @@
 mod model;
 
-use reqwest::{Client, header::{HeaderMap, HeaderValue}, ClientBuilder, StatusCode};
-use serde::{Serialize, Deserialize};
+use reqwest::{Client, header::{HeaderMap, HeaderValue}, ClientBuilder, StatusCode, Url};
+use std::{fs::File, io::{Cursor, copy}};
 
 use model::{IntrospectResponse, IntrospectBody};
 
@@ -10,6 +10,7 @@ use self::model::{RefreshBody, RefreshResponse};
 const API_VERSION: &str = "1";
 const INTROSPECT_TOKEN_ROUTE: &str = "https://api.lucid.co/oauth2/token/introspect";
 const REFRESH_TOKEN_ROUTE: &str = "https://api.lucid.co/oauth2/token";
+const EXPORT_DOCUMENT_ROUTE: &str = "https://api.lucid.co/documents/";
 
 pub struct OauthId {
     client_id: String,
@@ -82,6 +83,35 @@ impl LucidClient {
         self.refresh_token = res.refresh_token;
 
         Ok(())
+    }
+
+    /// Export cropped png image
+    pub async fn export_image(&self, destination: &str, document_id: &str, page: u8) -> Result<(), LucidError> {
+        let page_str = page.to_string();
+        let params = Vec::from([
+            ("page", page_str.as_ref()),
+            ("crop", "content")
+        ]);
+
+        let mut query_string = Url::parse_with_params(EXPORT_DOCUMENT_ROUTE, params).unwrap();
+        query_string.set_path(&format!("/documents/{}", document_id));
+
+        let resp = self.client.get(query_string)
+            .header("Accept", "image/png")
+            .header("Authorization", &format!("Bearer {}", self.access_token))
+            .send().await.unwrap();
+
+        match resp.status() {
+            StatusCode::OK => {
+                let mut f = File::create(destination).unwrap();
+                let mut writer = Cursor::new(resp.bytes().await.unwrap());
+                copy(&mut writer, &mut f).expect("Error copying image to file");
+
+                Ok(())
+            },
+            StatusCode::UNAUTHORIZED => Err(LucidError::ExpiredToken),
+            _ => Err(LucidError::UnexpectedResponse)
+        }
     }
 
     pub fn new(access_token: &str, refresh_token: &str, client_id: &str, client_secret: &str) -> LucidClient {

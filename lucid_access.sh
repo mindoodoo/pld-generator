@@ -89,7 +89,7 @@ function main() {
   request_tokens
 }
 
-while getopts "hca" flag; do
+while getopts "hcae" flag; do
   case $flag in
     h)
       usage

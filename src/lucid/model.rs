@@ -39,7 +39,7 @@ pub struct RefreshBody {
     pub grant_type: String
 }
 
-#[derive(Deserialize, Serialize)]
+#[derive(Deserialize)]
 pub struct RefreshResponse {
     pub access_token: String,
     user_id: i64,
@@ -51,3 +51,4 @@ pub struct RefreshResponse {
     scopes: Vec<String>,
     token_type: String,
 }
+
