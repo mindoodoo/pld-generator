@@ -18,7 +18,7 @@ macro_rules! lookup_env {
 #[tokio::main]
 async fn main() {
     dotenv().expect("Error loading .env file");
-    let api_key = lookup_env!("API_KEY");
+    let api_key = lookup_env!("GITHUB_API_KEY");
     let project = ProjectId {
         org: lookup_env!("PROJECT_OWNER"),
         project: lookup_env!("PROJECT_NUM").parse()
