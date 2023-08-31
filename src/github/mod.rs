@@ -90,7 +90,7 @@ impl ProjectsClient {
             client: ClientBuilder::new()
                 .default_headers(headers)
                 .build()
-                .expect("Error building reqwest client")
+                .unwrap()
         }
     }
 

@@ -61,9 +61,9 @@ impl UserWish {
 /// Main structure representing the parsed contents of a card
 #[derive(Debug)]
 pub struct PldCard {
-    wish: UserWish,
-    description: String,
-    dod: String
+    pub wish: UserWish,
+    pub description: String,
+    pub dod: String
 }
 
 impl PldCard {
