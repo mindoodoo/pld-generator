@@ -121,5 +121,3 @@ impl ProjectsClient {
 // Ideas :
 // - Maybe include the json part where you parse the nested stuff, inside the deserializer of ProjectItemsResp
 // - Remove some small stucts with deserialize_with field attribute
-
-// Left to do

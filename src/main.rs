@@ -1,10 +1,12 @@
 pub mod github;
+pub mod parsing;
 pub mod lucid;
 
-use github::ProjectId;
+use github::{ProjectId, card};
+use parsing::PldCard;
 
 use dotenv::dotenv;
-use std::env;
+use std::{env, fs};
 use tokio;
 
 #[tokio::main]
@@ -25,3 +27,4 @@ async fn main() {
         &env::var("LUCID_CLIENT_ID").unwrap(),
         &env::var("LUCID_CLIENT_SECRET").unwrap());
 }
+

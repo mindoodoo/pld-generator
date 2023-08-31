@@ -7,6 +7,7 @@ edition = "2021"
 
 [dependencies]
 dotenv = "0.15.0"
+regress = "0.6.0"
 reqwest = { version = "0.11.18", features = ["json"] }
 serde = { version = "1.0.183", features = ["derive"] }
 serde_json = "1.0.105"
