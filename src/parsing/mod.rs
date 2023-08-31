@@ -1,6 +1,6 @@
 use regress::{Regex, Flags};
 
-use crate::github::card::ProjectCard;
+use crate::github::card::{ProjectCard, self};
 
 // Section parsing regex's
 const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
@@ -63,6 +63,7 @@ impl UserWish {
 pub struct PldCard {
     pub name: String,
     pub section: String,
+    pub sub_section: String,
     pub wish: UserWish,
     pub description: String,
     pub dod: String,
@@ -93,6 +94,7 @@ impl PldCard {
         Ok(PldCard {
             name: card_resp.name,
             section: card_resp.section,
+            sub_section: card_resp.sub_section,
             wish,
             description,
             dod,

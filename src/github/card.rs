@@ -6,6 +6,7 @@ pub struct ProjectCard {
     pub name: String,
     pub content: String,
     pub section: String,
+    pub sub_section: String,
     pub working_days: f32
 }
 
@@ -34,10 +35,16 @@ impl<'de> Deserialize<'de> for ProjectCard {
         }
 
         #[derive(Deserialize)]
+        struct SubSection {
+            name: String
+        }
+
+        #[derive(Deserialize)]
         struct Node {
             content: Content,
             working_days: WorkingDays,
-            section: Section
+            section: Section,
+            sub_section: SubSection
         }
 
         let helper = Node::deserialize(deserializer)?;
@@ -46,7 +53,8 @@ impl<'de> Deserialize<'de> for ProjectCard {
             name: helper.content.title,
             content: helper.content.body_text,
             section: helper.section.name,
-            working_days: helper.working_days.number
+            working_days: helper.working_days.number,
+            sub_section: helper.sub_section.name
         })
     }
 }

@@ -37,6 +37,11 @@ const CARDS_QUERY: &str = r#"
                             name
                         }
                     }
+                    sub_section: fieldValueByName(name: "Sub-Section") {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                            name
+                        }
+                    }
                 }
                 pageInfo {
                     endCursor

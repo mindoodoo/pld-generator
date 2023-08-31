@@ -19,4 +19,3 @@ async fn main() {
         &env::var("LUCID_CLIENT_ID").unwrap(),
         &env::var("LUCID_CLIENT_SECRET").unwrap());
 }
-
