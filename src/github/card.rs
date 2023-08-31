@@ -1,4 +1,4 @@
-use serde::{self, Deserialize, Serialize};
+use serde::{self, Deserialize};
 
 /// Structure representing one card on the project
 #[derive(Debug)]
@@ -54,7 +54,7 @@ impl<'de> Deserialize<'de> for ProjectCard {
 #[derive(Deserialize, Debug)]
 pub struct PagingInfo {
     #[serde(rename = "endCursor")]
-    end_cursor: String
+    pub end_cursor: String
 }
 
 #[derive(Deserialize, Debug)]

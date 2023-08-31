@@ -1,4 +1,4 @@
-use regress::{Regex, Flags, Match};
+use regress::{Regex, Flags};
 
 use crate::github::card::ProjectCard;
 
