@@ -1,6 +1,6 @@
 use regress::{Regex, Flags, Match};
 
-use crate::github::card;
+use crate::github::card::ProjectCard;
 
 // Section parsing regex's
 const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
@@ -61,36 +61,42 @@ impl UserWish {
 /// Main structure representing the parsed contents of a card
 #[derive(Debug)]
 pub struct PldCard {
+    pub name: String,
+    pub section: String,
     pub wish: UserWish,
     pub description: String,
-    pub dod: String
+    pub dod: String,
+    pub working_days: f32
 }
 
 impl PldCard {
-    pub fn from_markdown(card_body: String) -> Result<PldCard, ParsingError> {
+    pub fn new(card_resp: ProjectCard) -> Result<PldCard, ParsingError> {
         let user_wish_regex = Regex::with_flags(USER_WISH_REGEX, FLAGS).unwrap();
         let description_regex = Regex::with_flags(DESCRIPTION_REGEX, FLAGS).unwrap();
         let dod_regex = Regex::with_flags(DOD_REGEX, FLAGS).unwrap();
 
-        let wish = match user_wish_regex.find(&card_body) {
-            Some(m) => UserWish::from_markdown(&card_body[m.range])?,
+        let wish = match user_wish_regex.find(&card_resp.content) {
+            Some(m) => UserWish::from_markdown(&card_resp.content[m.range])?,
             None => return Err(ParsingError::SectionMissing(CardSection::UserWish))
         };
 
-        let description = match description_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).trim().to_string(),
+        let description = match description_regex.find(&card_resp.content) {
+            Some(m) => (&card_resp.content[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Description))
         };
 
-        let dod = match dod_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).trim().to_string(),
+        let dod = match dod_regex.find(&card_resp.content) {
+            Some(m) => (&card_resp.content[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Dod))
         };
 
         Ok(PldCard {
+            name: card_resp.name,
+            section: card_resp.section,
             wish,
             description,
-            dod
+            dod,
+            working_days: card_resp.working_days
         })
     }
 }
