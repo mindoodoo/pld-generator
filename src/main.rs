@@ -23,3 +23,4 @@ async fn main() {
         .iter().map(|card| PldCard::new(card).unwrap()).collect();
     println!("{}", cards[0]);
 }
+
