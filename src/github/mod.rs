@@ -89,9 +89,7 @@ impl ProjectsClient {
         }
     }
 
-    pub async fn get_cards(&self) -> HashMap<String, Vec<ProjectCard>> {
-        let mut output: HashMap<String, Vec<ProjectCard>> = HashMap::new();
-
+    pub async fn get_cards(&self) -> Vec<ProjectCard> {
         let json_resp: serde_json::Value = self.client.post(ENDPOINT)
             .json(&GqlQuery { query: CARDS_QUERY.into() })
             .send()
@@ -103,13 +101,7 @@ impl ProjectsClient {
             json_resp["data"]["organization"]["projectV2"]["items"].clone()
         ).expect("Error deserializing json response");
 
-        for card in parsed_resp.nodes {
-            output.entry(card.section.clone())
-                .or_default()
-                .push(card);
-        };
-
-        output
+        parsed_resp.nodes
     }
 }
 

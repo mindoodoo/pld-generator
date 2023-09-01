@@ -1,6 +1,8 @@
+use std::collections::HashMap;
+
 use regress::{Regex, Flags};
 
-use crate::github::card::{ProjectCard, self};
+use crate::github::card::ProjectCard;
 
 // Section parsing regex's
 const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
@@ -101,4 +103,18 @@ impl PldCard {
             working_days: card_resp.working_days
         })
     }
+}
+
+pub fn sort_by_section(cards: Vec<PldCard>) -> HashMap<String, Vec<PldCard>> {
+    let mut output: HashMap<String, Vec<PldCard>> = HashMap::new();
+
+    for card in cards {
+        output.entry(card.section.clone()).or_default().push(card);
+    }
+
+    for (_, section_vec) in &mut output {
+        section_vec.sort_by_key(|el| el.sub_section.clone());
+    }
+
+    output
 }
