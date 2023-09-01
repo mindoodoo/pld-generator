@@ -1,6 +1,8 @@
-use regress::{Regex, Flags, Match};
+use std::{collections::HashMap, fmt};
 
-use crate::github::card;
+use regress::{Regex, Flags};
+
+use crate::github::card::ProjectCard;
 
 // Section parsing regex's
 const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
@@ -61,36 +63,71 @@ impl UserWish {
 /// Main structure representing the parsed contents of a card
 #[derive(Debug)]
 pub struct PldCard {
+    pub name: String,
+    pub section: String,
+    pub sub_section: String,
     pub wish: UserWish,
     pub description: String,
-    pub dod: String
+    pub dod: String,
+    pub working_days: f32
 }
 
 impl PldCard {
-    pub fn from_markdown(card_body: String) -> Result<PldCard, ParsingError> {
+    pub fn new(card_resp: &ProjectCard) -> Result<PldCard, ParsingError> {
         let user_wish_regex = Regex::with_flags(USER_WISH_REGEX, FLAGS).unwrap();
         let description_regex = Regex::with_flags(DESCRIPTION_REGEX, FLAGS).unwrap();
         let dod_regex = Regex::with_flags(DOD_REGEX, FLAGS).unwrap();
 
-        let wish = match user_wish_regex.find(&card_body) {
-            Some(m) => UserWish::from_markdown(&card_body[m.range])?,
+        let wish = match user_wish_regex.find(&card_resp.content) {
+            Some(m) => UserWish::from_markdown(&card_resp.content[m.range])?,
             None => return Err(ParsingError::SectionMissing(CardSection::UserWish))
         };
 
-        let description = match description_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).trim().to_string(),
+        let description = match description_regex.find(&card_resp.content) {
+            Some(m) => (&card_resp.content[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Description))
         };
 
-        let dod = match dod_regex.find(&card_body) {
-            Some(m) => (&card_body[m.range]).trim().to_string(),
+        let dod = match dod_regex.find(&card_resp.content) {
+            Some(m) => (&card_resp.content[m.range]).trim().to_string(),
             None => return Err(ParsingError::SectionMissing(CardSection::Dod))
         };
 
         Ok(PldCard {
+            name: card_resp.name.clone(),
+            section: card_resp.section.clone(),
+            sub_section: card_resp.sub_section.clone(),
             wish,
             description,
-            dod
+            dod,
+            working_days: card_resp.working_days
         })
     }
+}
+
+impl fmt::Display for PldCard {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "### {}\n\n", &self.name)?;
+        write!(f, "**As a:** {}\n\n", self.wish.user)?;
+        write!(f, "**I want to:** {}\n\n", self.wish.action)?;
+
+        write!(f, "**Description**\n\n{}\n\n", &self.description)?;
+        write!(f, "**Definition of Done**\n\n{}", self.dod)?;
+
+        Ok(())
+    }
+}
+
+pub fn sort_by_section(cards: Vec<PldCard>) -> HashMap<String, Vec<PldCard>> {
+    let mut output: HashMap<String, Vec<PldCard>> = HashMap::new();
+
+    for card in cards {
+        output.entry(card.section.clone()).or_default().push(card);
+    }
+
+    for (_, section_vec) in &mut output {
+        section_vec.sort_by_key(|el| el.sub_section.clone());
+    }
+
+    output
 }

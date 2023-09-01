@@ -3,7 +3,7 @@ pub mod card;
 use card::{ProjectCard, ProjectItems};
 
 use std::collections::HashMap;
-use serde::{Serialize};
+use serde::Serialize;
 use reqwest::{ClientBuilder, Client, header::{HeaderMap, HeaderValue}};
 
 const ENDPOINT: &str = "https://api.github.com/graphql";
@@ -14,17 +14,17 @@ const CARDS_QUERY: &str = r#"
 {
     organization(login: "Autogrower") {
         projectV2(number: 7) {
-            items(first: 5) {
+            items(first: 1) {
                 totalCount
                 nodes {
                     content {
                         ... on DraftIssue {
                             title
-                            bodyText
+                            body
                         }
                         ... on Issue {
                             title
-                            bodyText
+                            body
                         }
                     }
                     working_days: fieldValueByName(name: "Working Days") {
@@ -33,6 +33,11 @@ const CARDS_QUERY: &str = r#"
                         }
                     }
                     section: fieldValueByName(name: "Section") {
+                        ... on ProjectV2ItemFieldSingleSelectValue {
+                            name
+                        }
+                    }
+                    sub_section: fieldValueByName(name: "Sub-Section") {
                         ... on ProjectV2ItemFieldSingleSelectValue {
                             name
                         }
@@ -47,14 +52,6 @@ const CARDS_QUERY: &str = r#"
 }
 "#;
 
-/// Identifying information for target project
-pub struct ProjectId {
-    /// Project org owner
-    pub org: String,
-    /// Project number within the org
-    pub project: usize
-}
-
 /// Main client struct for all requests relevent to github projects
 pub struct ProjectsClient {
     /// Api key for request authentication
@@ -68,8 +65,7 @@ pub struct ProjectsClient {
     /// 
     /// Note: The token needs to be a fine grained token as classic tokens
     /// do not work with the github graphQL API
-    api_key: String,
-    project: ProjectId,
+    project: u8,
     client: Client
 }
 
@@ -79,13 +75,12 @@ struct GqlQuery {
 }
 
 impl ProjectsClient {
-    pub fn new(api_key: &str, project: ProjectId) -> ProjectsClient {
+    pub fn new(api_key: &str, project: u8) -> ProjectsClient {
         let mut headers = HeaderMap::with_capacity(2);
         headers.insert("Authorization", HeaderValue::from_str(&format!("Bearer {}", api_key)).unwrap());
         headers.insert("User-Agent", HeaderValue::from_static("pld-generator"));
 
         ProjectsClient {
-            api_key: api_key.into(),
             project,
             client: ClientBuilder::new()
                 .default_headers(headers)
@@ -94,9 +89,7 @@ impl ProjectsClient {
         }
     }
 
-    pub async fn get_cards(&self) -> HashMap<String, Vec<ProjectCard>> {
-        let mut output: HashMap<String, Vec<ProjectCard>> = HashMap::new();
-
+    pub async fn get_cards(&self) -> Vec<ProjectCard> {
         let json_resp: serde_json::Value = self.client.post(ENDPOINT)
             .json(&GqlQuery { query: CARDS_QUERY.into() })
             .send()
@@ -108,13 +101,7 @@ impl ProjectsClient {
             json_resp["data"]["organization"]["projectV2"]["items"].clone()
         ).expect("Error deserializing json response");
 
-        for card in parsed_resp.nodes {
-            output.entry(card.section.clone())
-                .or_default()
-                .push(card);
-        };
-
-        output
+        parsed_resp.nodes
     }
 }
 
