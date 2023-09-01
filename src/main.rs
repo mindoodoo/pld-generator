@@ -3,6 +3,7 @@ pub mod parsing;
 pub mod lucid;
 
 use dotenv::dotenv;
+use parsing::PldCard;
 use std::env;
 use tokio;
 
@@ -18,4 +19,7 @@ async fn main() {
         &env::var("LUCID_REFRESH_TOKEN").unwrap(),
         &env::var("LUCID_CLIENT_ID").unwrap(),
         &env::var("LUCID_CLIENT_SECRET").unwrap());
+    let cards: Vec<PldCard> = gh_client.get_cards().await
+        .iter().map(|card| PldCard::new(card).unwrap()).collect();
+    println!("{}", cards[0]);
 }

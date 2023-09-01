@@ -1,4 +1,4 @@
-use std::collections::HashMap;
+use std::{collections::HashMap, fmt};
 
 use regress::{Regex, Flags};
 
@@ -73,7 +73,7 @@ pub struct PldCard {
 }
 
 impl PldCard {
-    pub fn new(card_resp: ProjectCard) -> Result<PldCard, ParsingError> {
+    pub fn new(card_resp: &ProjectCard) -> Result<PldCard, ParsingError> {
         let user_wish_regex = Regex::with_flags(USER_WISH_REGEX, FLAGS).unwrap();
         let description_regex = Regex::with_flags(DESCRIPTION_REGEX, FLAGS).unwrap();
         let dod_regex = Regex::with_flags(DOD_REGEX, FLAGS).unwrap();
@@ -94,14 +94,27 @@ impl PldCard {
         };
 
         Ok(PldCard {
-            name: card_resp.name,
-            section: card_resp.section,
-            sub_section: card_resp.sub_section,
+            name: card_resp.name.clone(),
+            section: card_resp.section.clone(),
+            sub_section: card_resp.sub_section.clone(),
             wish,
             description,
             dod,
             working_days: card_resp.working_days
         })
+    }
+}
+
+impl fmt::Display for PldCard {
+    fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
+        write!(f, "### {}\n\n", &self.name)?;
+        write!(f, "**As a:** {}\n\n", self.wish.user)?;
+        write!(f, "**I want to:** {}\n\n", self.wish.action)?;
+
+        write!(f, "**Description**\n\n{}\n\n", &self.description)?;
+        write!(f, "**Definition of Done**\n\n{}", self.dod)?;
+
+        Ok(())
     }
 }
 

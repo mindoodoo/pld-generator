@@ -14,17 +14,17 @@ const CARDS_QUERY: &str = r#"
 {
     organization(login: "Autogrower") {
         projectV2(number: 7) {
-            items(first: 5) {
+            items(first: 1) {
                 totalCount
                 nodes {
                     content {
                         ... on DraftIssue {
                             title
-                            bodyText
+                            body
                         }
                         ... on Issue {
                             title
-                            bodyText
+                            body
                         }
                     }
                     working_days: fieldValueByName(name: "Working Days") {

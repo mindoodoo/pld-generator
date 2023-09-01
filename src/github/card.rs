@@ -20,8 +20,7 @@ impl<'de> Deserialize<'de> for ProjectCard {
         #[derive(Deserialize)]
         struct Content {
             title: String,
-            #[serde(rename = "bodyText")]
-            body_text: String 
+            body: String 
         }
 
         #[derive(Deserialize)]
@@ -51,7 +50,7 @@ impl<'de> Deserialize<'de> for ProjectCard {
 
         Ok(ProjectCard {
             name: helper.content.title,
-            content: helper.content.body_text,
+            content: helper.content.body,
             section: helper.section.name,
             working_days: helper.working_days.number,
             sub_section: helper.sub_section.name
