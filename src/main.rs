@@ -26,7 +26,7 @@ fn parse_config(path: &str) -> Option<Config> {
     let mut file_content = String::new();
     file.read_to_string(&mut file_content).ok()?;
 
-    let mut config: Config = toml::from_str(&file_content).ok()?;
+    let mut config: Config = toml::from_str(&file_content).unwrap();
     config.path = path.to_string();
 
     Some(config)
@@ -41,8 +41,8 @@ async fn main() -> Result<(), Box<dyn Error>> {
         None => parse_config("./generator_config.toml")
     }.ok_or("Configuration parsing failed")?;
 
-    let mut app = App::new(conf, &args.output);
+    let mut app = App::new(conf, &args.output)?;
+    app.run().await?;
 
     Ok(())
 }
-

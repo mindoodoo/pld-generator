@@ -26,6 +26,11 @@ Implemented :
 - [ ] Improve deserialization error handling
   - For the time being it will the deserialization will fail in a lot of places if the response is of the error type, this should be better managed by checking the status code first
 
+## Unhandled edge cases that should have user facing errors
+
+- `app.rs` &rarr; if lucid document id is invalid
+- Lucid module does not handle unauthenticated requests well enough
+
 ## Getting access token
 
 In order to be able to connect to the lucid chart api, you need to get an [OAuth2](https://oauth.net/2/) **access token** and **refresh token**. The documentation for getting these tokens is [documented]() however was a bit of a hassle to understand so you may follow the steps here instead. They were especially unclear in a simple user script case such as this one.
