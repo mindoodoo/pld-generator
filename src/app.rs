@@ -1,6 +1,17 @@
-use std::{path::{Path, PathBuf}, fs::{self, File}, fmt::Display, io::Write, error::Error};
+use std::{path::{Path, PathBuf}, fs::{self, File, OpenOptions}, fmt::Display, io::Write, error::Error};
 
 use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient};
+
+const DOC_BEGIN: &str = "# Project Log Document
+
+## Revision Table
+
+## Document Description
+
+## Table of Revisions
+
+
+";
 
 #[derive(Debug)]
 pub enum GeneratorError {
@@ -23,6 +34,7 @@ impl Error for GeneratorError {}
 
 pub struct App {
     output_dir: String,
+    output_file: File,
     conf: Config,
     lucid_client: LucidClient,
     projects_client: ProjectsClient
@@ -31,6 +43,13 @@ pub struct App {
 impl App {
     pub fn new(conf: Config, output_dir: &str) -> Result<Self, GeneratorError> {
         fs::create_dir_all(format!("{}/{}", output_dir, "images")).map_err(|_| GeneratorError::InvalidOutputDirectory)?;
+        let output_file = PathBuf::from(format!("{}/pld.md", output_dir));
+
+        {
+            // Ensure that the file is empty
+            let f = File::create(&output_file).map_err(|_| GeneratorError::InvalidOutputDirectory)?;
+            f.set_len(0).unwrap();
+        }
 
         Ok(App {
             output_dir: output_dir.to_string(),
@@ -41,7 +60,9 @@ impl App {
                 &conf.lucid_client_secret
             ),
             projects_client: ProjectsClient::new(&conf.github_api_key, conf.project_number),
-            conf
+            conf,
+            output_file: OpenOptions::new().append(true).open(output_file)
+                .map_err(|_| GeneratorError::InvalidOutputDirectory)?
         })
     }
 
@@ -58,30 +79,41 @@ impl App {
         Ok(())
     }
 
-    async fn download_images(&self) -> Vec<PathBuf> {
-        let mut output = Vec::new();
+    /// Downloads all images to the output directory and writes the diagram of the deliverables
+    async fn write_images(&mut self) {
+        let mut image_paths = Vec::new();
 
         let n_pages = self.lucid_client.get_page_count(&self.conf.document_id).await
             .expect("Error querying document page number lucid chart");
 
         for page in 1..=n_pages {
             let mut dest = PathBuf::from(&self.output_dir);
-            dest.push("images");
-            dest.push(format!("{}.png", page.to_string()));
+            let image_path = format!("images/{}.png", page.to_string());
+            dest.push(&image_path);
 
             self.lucid_client.export_image(dest.to_str().unwrap(), &self.conf.document_id, page).await
                 .expect("Error downloading image");
 
-            output.push(dest);
+            image_paths.push(image_path);
         }
 
-        output
+        write!(self.output_file, "## Diagram of the Deliverables\n\n").unwrap();
+        write!(self.output_file, r#"<p align="center">"#).unwrap();
+
+        for path in image_paths {
+            writeln!(self.output_file, r#"  <img src="{}" />"#, path).unwrap();
+        }
+
+        write!(self.output_file, "</p>\n\n").unwrap();
     }
 
+    /// Run generator
     pub async fn run(&mut self) -> Result<(), GeneratorError> {
         self.ensure_lucid_token_validity().await?;
 
-        self.download_images().await;
+        write!(self.output_file, "{}", DOC_BEGIN).unwrap();
+
+        self.write_images().await;
 
         Ok(())
     }
