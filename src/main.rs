@@ -7,7 +7,7 @@ mod config;
 use app::App;
 use clap::Parser;
 use config::Config;
-use std::{env, process::ExitCode, fs::File, io::Read, error::Error};
+use std::{fs::File, io::Read, error::Error};
 use tokio;
 
 #[derive(Parser, Debug)]

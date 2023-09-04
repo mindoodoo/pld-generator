@@ -9,6 +9,8 @@ pub struct Config {
     pub lucid_access_token: String,
     pub lucid_refresh_token: String,
     pub document_id: String,
+    pub image_width: Option<String>,
+    pub image_height: Option<String>,
     /// Path from which the config was loaded
     #[serde(skip)]
     pub path: String

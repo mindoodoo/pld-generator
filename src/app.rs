@@ -114,10 +114,13 @@ impl App {
             image_paths.push(image_path);
         }
 
-        write!(images_buf, r#"<p align="center">"#).unwrap();
+        writeln!(images_buf, r#"<p align="center">"#).unwrap();
 
         for path in image_paths {
-            writeln!(images_buf, r#"  <img src="{}" />"#, path).unwrap();
+            writeln!(images_buf, "  <img src=\"{}\" height={} width={}/>\n  <br></br>",
+                path,
+                self.conf.image_height.clone().unwrap_or("".into()),
+                self.conf.image_width.clone().unwrap_or("".into())).unwrap();
         }
 
         write!(images_buf, "</p>").unwrap();
@@ -158,7 +161,7 @@ impl App {
 
         self.write_cards().await;
         
-        self.output_file.write(self.output_buffer.as_bytes()).unwrap();
+        self.output_file.write(self.output_buffer.as_bytes()).map_err(|_| GeneratorError::WriteFailed)?;
 
         Ok(())
     }
