@@ -1,6 +1,6 @@
 use std::{path::{Path, PathBuf}, fs::{self, File, OpenOptions}, fmt::Display, io::Write, error::Error};
 
-use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient, parsing::PldCard};
+use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}};
 
 // PLD bits
 const DOC_BEGIN: &str = "# Project Log Document
@@ -16,6 +16,7 @@ const DOC_BEGIN: &str = "# Project Log Document
 
 // Tags
 const LUCID_TAG: &str = "{{lucid}}";
+const CARDS_TAG: &str = "{{cards}}";
 
 #[derive(Debug)]
 pub enum GeneratorError {
@@ -91,9 +92,9 @@ impl App {
     }
 
     /// Downloads all images to the output directory and writes the diagram of the deliverables
-    async fn write_images(&mut self) {
+    async fn write_images_md(&mut self) {
         let mut image_paths = Vec::new();
-        let mut images_md = Vec::new();
+        let mut images_buf = Vec::new();
 
         if self.output_buffer.find(LUCID_TAG).is_none() {
             return;
@@ -113,29 +114,50 @@ impl App {
             image_paths.push(image_path);
         }
 
-        write!(images_md, r#"<p align="center">"#).unwrap();
+        write!(images_buf, r#"<p align="center">"#).unwrap();
 
         for path in image_paths {
-            writeln!(images_md, r#"  <img src="{}" />"#, path).unwrap();
+            writeln!(images_buf, r#"  <img src="{}" />"#, path).unwrap();
         }
 
-        write!(images_md, "</p>").unwrap();
+        write!(images_buf, "</p>").unwrap();
         
         // Append markdown to buffer
-        self.output_buffer = self.output_buffer.replace(LUCID_TAG, &String::from_utf8(images_md).unwrap());
+        self.output_buffer = self.output_buffer.replace(LUCID_TAG, &String::from_utf8(images_buf).unwrap());
     }
 
     async fn write_cards(&mut self) {
-        // let cards: Vec<PldCard> = self.projects_client.get_cards().await
-        //     .iter().map(|card| PldCard::new(card).unwrap_or(())).collect();
+        let cards: Vec<PldCard> = self.projects_client.get_cards().await.iter()
+            .map(|card| PldCard::new(card))
+            .filter(|card| card.is_ok())
+            .map(|card| card.unwrap()).collect();
+        let sorted_cards = sort_by_section(cards);
+
+        let mut cards_buf = Vec::new();
+
+        for (section_name, sub_section_map) in sorted_cards {
+            write!(cards_buf, "### {}\n\n", section_name).unwrap();
+
+            for (subsection_name, sub_section_cards) in sub_section_map {
+                write!(cards_buf, "#### {}\n\n", subsection_name).unwrap();
+
+                for card in sub_section_cards {
+                    write!(cards_buf, "##### {}\n\n", card).unwrap();
+                }
+            }
+        }
+
+        self.output_buffer = self.output_buffer.replace(CARDS_TAG, &String::from_utf8(cards_buf).unwrap());
     }
 
     /// Run generator
     pub async fn run(&mut self) -> Result<(), GeneratorError> {
         self.ensure_lucid_token_validity().await?;
 
-        self.write_images().await;
+        self.write_images_md().await;
 
+        self.write_cards().await;
+        
         self.output_file.write(self.output_buffer.as_bytes()).unwrap();
 
         Ok(())

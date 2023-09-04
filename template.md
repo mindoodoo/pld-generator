@@ -7,3 +7,8 @@
 ## Diagram of the Deliverables
 
 {{lucid}}
+
+
+## Cards
+
+{{cards}}
