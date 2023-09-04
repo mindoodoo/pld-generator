@@ -2,6 +2,19 @@
 
 Simple utility generator utilizing **github's graphql API** to request cards from specified project and generate a **Project Log Document (PLD)** in **markdown format**
 
+## Functionning
+
+In order to generate the PLD, the pld-generator uses a template (default is template.md) and replaces special tags with specific values.
+
+The following tags are supported :
+
+| **Tag** | **Description**       |
+| ------- | --------------------- |
+| lucid   | Lucid chart diagrams  |
+| cards   | Github projects cards |
+
+In order to be parsed correctly, tags must be surrounded by two pairs of curly braces such as `{{cards}}`.
+
 ## Current state
 
 *Still in development*

@@ -1,7 +1,8 @@
 use std::{path::{Path, PathBuf}, fs::{self, File, OpenOptions}, fmt::Display, io::Write, error::Error};
 
-use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient};
+use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient, parsing::PldCard};
 
+// PLD bits
 const DOC_BEGIN: &str = "# Project Log Document
 
 ## Revision Table
@@ -13,17 +14,24 @@ const DOC_BEGIN: &str = "# Project Log Document
 
 ";
 
+// Tags
+const LUCID_TAG: &str = "{{lucid}}";
+
 #[derive(Debug)]
 pub enum GeneratorError {
     InvalidOutputDirectory,
-    LucidInvalidRefreshToken
+    LucidInvalidRefreshToken,
+    TemplateError,
+    WriteFailed
 }
 
 impl Display for GeneratorError {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         match self {
             GeneratorError::InvalidOutputDirectory => write!(f, "Accessing or creating specified output directory").unwrap(),
-            GeneratorError::LucidInvalidRefreshToken => write!(f, "The specified lucid refresh token is invalid").unwrap()
+            GeneratorError::LucidInvalidRefreshToken => write!(f, "The specified lucid refresh token is invalid").unwrap(),
+            GeneratorError::TemplateError => write!(f, "The template could not be found").unwrap(),
+            GeneratorError::WriteFailed => write!(f, "Writing to the specified output file has failed").unwrap()
         };
         
         Ok(())
@@ -35,6 +43,7 @@ impl Error for GeneratorError {}
 pub struct App {
     output_dir: String,
     output_file: File,
+    output_buffer: String,
     conf: Config,
     lucid_client: LucidClient,
     projects_client: ProjectsClient
@@ -53,6 +62,10 @@ impl App {
 
         Ok(App {
             output_dir: output_dir.to_string(),
+            output_file: File::create(output_file)
+                .map_err(|_| GeneratorError::InvalidOutputDirectory)?,
+            output_buffer: fs::read_to_string("./template.md")
+                .map_err(|_| GeneratorError::TemplateError)?,
             lucid_client: LucidClient::new(
                 &conf.lucid_access_token,
                 &conf.lucid_refresh_token,
@@ -61,8 +74,6 @@ impl App {
             ),
             projects_client: ProjectsClient::new(&conf.github_api_key, conf.project_number),
             conf,
-            output_file: OpenOptions::new().append(true).open(output_file)
-                .map_err(|_| GeneratorError::InvalidOutputDirectory)?
         })
     }
 
@@ -82,6 +93,11 @@ impl App {
     /// Downloads all images to the output directory and writes the diagram of the deliverables
     async fn write_images(&mut self) {
         let mut image_paths = Vec::new();
+        let mut images_md = Vec::new();
+
+        if self.output_buffer.find(LUCID_TAG).is_none() {
+            return;
+        }
 
         let n_pages = self.lucid_client.get_page_count(&self.conf.document_id).await
             .expect("Error querying document page number lucid chart");
@@ -97,23 +113,30 @@ impl App {
             image_paths.push(image_path);
         }
 
-        write!(self.output_file, "## Diagram of the Deliverables\n\n").unwrap();
-        write!(self.output_file, r#"<p align="center">"#).unwrap();
+        write!(images_md, r#"<p align="center">"#).unwrap();
 
         for path in image_paths {
-            writeln!(self.output_file, r#"  <img src="{}" />"#, path).unwrap();
+            writeln!(images_md, r#"  <img src="{}" />"#, path).unwrap();
         }
 
-        write!(self.output_file, "</p>\n\n").unwrap();
+        write!(images_md, "</p>").unwrap();
+        
+        // Append markdown to buffer
+        self.output_buffer = self.output_buffer.replace(LUCID_TAG, &String::from_utf8(images_md).unwrap());
+    }
+
+    async fn write_cards(&mut self) {
+        // let cards: Vec<PldCard> = self.projects_client.get_cards().await
+        //     .iter().map(|card| PldCard::new(card).unwrap_or(())).collect();
     }
 
     /// Run generator
     pub async fn run(&mut self) -> Result<(), GeneratorError> {
         self.ensure_lucid_token_validity().await?;
 
-        write!(self.output_file, "{}", DOC_BEGIN).unwrap();
-
         self.write_images().await;
+
+        self.output_file.write(self.output_buffer.as_bytes()).unwrap();
 
         Ok(())
     }
