@@ -4,17 +4,6 @@ Simple utility generator utilizing **github's graphql API** to request cards fro
 
 ## Usage
 
-### Options
-
-```
-pld-generator -o <output directory> [OPTION]
-
-Optional flags :
-
--c, --config
-  Specify config file path.
-```
-
 ### Pld Template
 
 In order to generate the PLD, the pld-generator uses a template (default is template.md) and replaces special tags with specific values.
