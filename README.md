@@ -23,7 +23,7 @@ By default, the `pld-generator` searches for a `generator_config.toml` in the cu
 The config accepts the following options.
 
 | **Mandatory**      | **Key**             | **Description**                                      |
-| ------------------ | ------------------- | ---------------------------------------------------- |
+| :----------------: | ------------------- | ---------------------------------------------------- |
 | :white_check_mark: | github_api_key      | Fine grained token                                   |
 | :white_check_mark: | project_number      | Github projects number                               |
 | :white_check_mark: | lucid_client_id     | Lucid OAuth client ID                                |
