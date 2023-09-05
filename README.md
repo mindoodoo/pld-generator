@@ -1,8 +1,21 @@
 # pld-generator
 
-Simple utility generator utilizing **github's graphql API** to request cards from specified project and generate a **Project Log Document (PLD)** in **markdown format**
+Simple utility generator utilizing **github's graphql API** to request cards from specified project and generate a **Project Log Document (PLD)** in **markdown format.**
 
-## Functionning
+## Usage
+
+### Options
+
+```
+pld-generator -o <output directory> [OPTION]
+
+Optional flags :
+
+-c, --config
+  Specify config file path.
+```
+
+### Pld Template
 
 In order to generate the PLD, the pld-generator uses a template (default is template.md) and replaces special tags with specific values.
 
@@ -15,36 +28,32 @@ The following tags are supported :
 
 In order to be parsed correctly, tags must be surrounded by two pairs of curly braces such as `{{cards}}`.
 
-## Current state
+### Config
 
-*Still in development*
+By default, the `pld-generator` searches for a `generator_config.toml` in the current directory.
+The config accepts the following options.
 
-Implemented :
+| **Mandatory**      | **Key**             | **Description**                                      |
+| ------------------ | ------------------- | ---------------------------------------------------- |
+| :white_check_mark: | github_api_key      | Fine grained token                                   |
+| :white_check_mark: | project_number      | Github projects number                               |
+| :white_check_mark: | lucid_client_id     | Lucid OAuth client ID                                |
+| :white_check_mark: | lucid_client_secret | Lucid OAuth client secret                            |
+| :white_check_mark: | lucid_access_token  | Lucid access token generated through OAuth2 process  |
+| :white_check_mark: | lucid_refresh_token | Lucid refresh token generated through OAuth2 process |
+| :white_check_mark: | document_id         | Lucid document id                                    |
+|                    | image_width         | Specify image width for lucid diagrams               |
+|                    | image_height        | Specify image height for lucid diagrams              |
 
-- [x] Github api key authentication
-- [X] Graphql request to get cards
-  - [ ] Handle paging
-- [ ] Cards parsing
-- [ ] Markdown generating
+### Github token
 
-## Improvements
+You must provide a **fine grained** personal access token with the following permissions :
 
-- [ ] Improve storage of gql request &rarr; .graphql file ?
-- [ ] Add manual ordering feature
-- [ ] Automatic numbering
-- [ ] Use [anyhow](https://github.com/dtolnay/anyhow) for error handling
-- [ ] Restructure serde datamodel module
-    - ie: `model` module ?
-- [ ] Github card linter &rarr; automatic formatter
-- [ ] Improve deserialization error handling
-  - For the time being it will the deserialization will fail in a lot of places if the response is of the error type, this should be better managed by checking the status code first
+- **Read access** to organization projects
+- **Read access** to issues
+- **Read access** to metadata
 
-## Unhandled edge cases that should have user facing errors
-
-- `app.rs` &rarr; if lucid document id is invalid
-- Lucid module does not handle unauthenticated requests well enough
-
-## Getting access token
+### Lucid token
 
 In order to be able to connect to the lucid chart api, you need to get an [OAuth2](https://oauth.net/2/) **access token** and **refresh token**. The documentation for getting these tokens is [documented]() however was a bit of a hassle to understand so you may follow the steps here instead. They were especially unclear in a simple user script case such as this one.
 
@@ -91,3 +100,33 @@ curl 'https://api.lucid.co/oauth2/token' \
 ```
 
 9. You should now have an access token and a refresh token !
+
+## Current state
+
+*Still in development*
+
+Implemented :
+
+- [x] Github api key authentication
+- [X] Graphql request to get cards
+  - [ ] Handle paging
+- [X] Cards parsing
+- [X] Markdown generating
+- [X] Lucid chart document screenshot downloading
+
+### Improvements
+
+- [ ] Improve storage of gql request &rarr; .graphql file ?
+- [ ] Add manual ordering feature
+- [ ] Automatic numbering
+- [ ] Use [anyhow](https://github.com/dtolnay/anyhow) for error handling
+- [ ] Restructure serde datamodel module
+    - ie: `model` module ?
+- [ ] Github card linter &rarr; automatic formatter
+- [ ] Improve deserialization error handling
+  - For the time being it will the deserialization will fail in a lot of places if the response is of the error type, this should be better managed by checking the status code first
+
+### Unhandled edge cases that should have user facing errors
+
+- `app.rs` &rarr; if lucid document id is invalid
+- Lucid module does not handle unauthenticated requests well enough
