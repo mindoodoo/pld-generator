@@ -14,7 +14,7 @@ const CARDS_QUERY: &str = r#"
 {
     organization(login: "Autogrower") {
         projectV2(number: 7) {
-            items(first: 1) {
+            items(first: 20) {
                 totalCount
                 nodes {
                     content {
