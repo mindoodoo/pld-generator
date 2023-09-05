@@ -57,24 +57,24 @@ impl App {
             output_buffer: fs::read_to_string("./template.md")
                 .map_err(|_| GeneratorError::TemplateError)?,
             lucid_client: LucidClient::new(
-                &conf.lucid_access_token,
-                &conf.lucid_refresh_token,
-                &conf.lucid_client_id,
-                &conf.lucid_client_secret
+                &conf.lucid.access_token,
+                &conf.lucid.refresh_token,
+                &conf.lucid.client_id,
+                &conf.lucid.client_secret
             ),
-            projects_client: ProjectsClient::new(&conf.github_api_key, conf.project_number),
+            projects_client: ProjectsClient::new(&conf.github.api_key, conf.github.project_number),
             conf,
         })
     }
 
     /// Checks if lucid token is valid and attempts to update token if not
     async fn ensure_lucid_token_validity(&mut self) -> Result<(), GeneratorError> {
-        if !(self.lucid_client.check_access_token(&self.conf.lucid_access_token).await) {
+        if !(self.lucid_client.check_access_token(&self.conf.lucid.access_token).await) {
             let (new_access, new_refresh) = self.lucid_client.refresh_token().await
                 .map_err(|_| GeneratorError::LucidInvalidRefreshToken)?;
 
-            self.conf.lucid_access_token = new_access;
-            self.conf.lucid_refresh_token = new_refresh;
+            self.conf.lucid.access_token = new_access;
+            self.conf.lucid.refresh_token = new_refresh;
         }
 
         Ok(())
@@ -89,7 +89,7 @@ impl App {
             return;
         }
 
-        let n_pages = self.lucid_client.get_page_count(&self.conf.document_id).await
+        let n_pages = self.lucid_client.get_page_count(&self.conf.lucid.document_id).await
             .expect("Error querying document page number lucid chart");
 
         for page in 1..=n_pages {
@@ -97,7 +97,7 @@ impl App {
             let image_path = format!("images/{}.png", page.to_string());
             dest.push(&image_path);
 
-            self.lucid_client.export_image(dest.to_str().unwrap(), &self.conf.document_id, page).await
+            self.lucid_client.export_image(dest.to_str().unwrap(), &self.conf.lucid.document_id, page).await
                 .expect("Error downloading image");
 
             image_paths.push(image_path);
@@ -108,8 +108,8 @@ impl App {
         for path in image_paths {
             writeln!(images_buf, "  <img src=\"{}\" height={} width={}/>\n  <br></br>",
                 path,
-                self.conf.image_height.clone().unwrap_or("".into()),
-                self.conf.image_width.clone().unwrap_or("".into())).unwrap();
+                self.conf.doc.image_height.clone().unwrap_or("".into()),
+                self.conf.doc.image_width.clone().unwrap_or("".into())).unwrap();
         }
 
         write!(images_buf, "</p>").unwrap();
