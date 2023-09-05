@@ -2,7 +2,6 @@ pub mod card;
 
 use card::{ProjectCard, ProjectItems};
 
-use std::collections::HashMap;
 use serde::Serialize;
 use reqwest::{ClientBuilder, Client, header::{HeaderMap, HeaderValue}};
 
@@ -13,8 +12,8 @@ const ENDPOINT: &str = "https://api.github.com/graphql";
 const CARDS_QUERY: &str = r#"
 {
     organization(login: "Autogrower") {
-        projectV2(number: 7) {
-            items(first: 20) {
+        projectV2(number: $PROJECT) {
+            items(first: $CARD_COUNT) {
                 totalCount
                 nodes {
                     content {
@@ -90,8 +89,12 @@ impl ProjectsClient {
     }
 
     pub async fn get_cards(&self) -> Vec<ProjectCard> {
+        let query_str = String::from(CARDS_QUERY)
+            .replace("$PROJECT", &self.project.to_string())
+            .replace("$CARD_COUNT", &100.to_string());
+
         let json_resp: serde_json::Value = self.client.post(ENDPOINT)
-            .json(&GqlQuery { query: CARDS_QUERY.into() })
+            .json(&GqlQuery { query: query_str })
             .send()
             .await.expect("Error sending cards graphql request")
             .json::<serde_json::Value>()
@@ -104,7 +107,3 @@ impl ProjectsClient {
         parsed_resp.nodes
     }
 }
-
-// Ideas :
-// - Maybe include the json part where you parse the nested stuff, inside the deserializer of ProjectItemsResp
-// - Remove some small stucts with deserialize_with field attribute
