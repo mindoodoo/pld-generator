@@ -119,3 +119,4 @@ Implemented :
 
 - `app.rs` &rarr; if lucid document id is invalid
 - Lucid module does not handle unauthenticated requests well enough
+- Ill formatted response in `github` module `get_cards()` &rarr; needs better error handling

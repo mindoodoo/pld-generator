@@ -1,18 +1,7 @@
-use std::{path::{Path, PathBuf}, fs::{self, File, OpenOptions}, fmt::Display, io::Write, error::Error};
+use std::{path::PathBuf, fs::{self, File}, fmt::Display, io::Write, error::Error};
+use colored::Colorize;
 
-use crate::{Args, config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}};
-
-// PLD bits
-const DOC_BEGIN: &str = "# Project Log Document
-
-## Revision Table
-
-## Document Description
-
-## Table of Revisions
-
-
-";
+use crate::{config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}};
 
 // Tags
 const LUCID_TAG: &str = "{{lucid}}";
@@ -131,7 +120,15 @@ impl App {
 
     async fn write_cards(&mut self) {
         let cards: Vec<PldCard> = self.projects_client.get_cards().await.iter()
-            .map(|card| PldCard::new(card))
+            .map(|card| {
+                let parsed_card = PldCard::new(card);
+
+                if parsed_card.is_err() {
+                    println!("{} Skipping card \"{}\" due to parsing failure.", "WARNING: ".yellow(), card.name.yellow());
+                }
+                
+                parsed_card
+            })
             .filter(|card| card.is_ok())
             .map(|card| card.unwrap()).collect();
         let sorted_cards = sort_by_section(cards);
