@@ -107,7 +107,7 @@ impl PldCard {
 
 impl fmt::Display for PldCard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "### {}\n\n", &self.name)?;
+        write!(f, "{}\n\n", &self.name)?;
         write!(f, "**As a:** {}\n\n", self.wish.user)?;
         write!(f, "**I want to:** {}\n\n", self.wish.action)?;
 
@@ -118,15 +118,12 @@ impl fmt::Display for PldCard {
     }
 }
 
-pub fn sort_by_section(cards: Vec<PldCard>) -> HashMap<String, Vec<PldCard>> {
-    let mut output: HashMap<String, Vec<PldCard>> = HashMap::new();
+pub fn sort_by_section(cards: Vec<PldCard>) -> HashMap<String, HashMap<String, Vec<PldCard>>> {
+    let mut output: HashMap<String, HashMap<String, Vec<PldCard>>> = HashMap::new();
 
     for card in cards {
-        output.entry(card.section.clone()).or_default().push(card);
-    }
-
-    for (_, section_vec) in &mut output {
-        section_vec.sort_by_key(|el| el.sub_section.clone());
+        output.entry(card.section.clone()).or_default()
+            .entry(card.sub_section.clone()).or_default().push(card);
     }
 
     output

@@ -57,7 +57,7 @@ impl LucidClient {
     }
 
     /// Refreshes both refresh token and access_token
-    pub async fn refresh_token(&mut self) -> Result<(), LucidError> {
+    pub async fn refresh_token(&mut self) -> Result<(String, String), LucidError> {
         let body = RefreshBody {
             refresh_token: self.refresh_token.clone(),
             client_id: self.oauth_id.client_id.clone(),
@@ -83,7 +83,7 @@ impl LucidClient {
         self.access_token = res.access_token;
         self.refresh_token = res.refresh_token;
 
-        Ok(())
+        Ok((self.access_token.clone(), self.refresh_token.clone()))
     }
 
     /// Export cropped png image
@@ -96,7 +96,7 @@ impl LucidClient {
 
         let mut query_string = Url::parse_with_params(EXPORT_DOCUMENT_ROUTE, params).unwrap();
         query_string.set_path(&format!("/documents/{}", document_id));
-
+        
         let resp = self.client.get(query_string)
             .header("Accept", "image/png")
             .header("Authorization", &format!("Bearer {}", self.access_token))
@@ -125,11 +125,7 @@ impl LucidClient {
 
         match resp.status() {
             StatusCode::OK => {
-                println!("Here");
-
                 let body: GetDocumentResponse = resp.json().await.expect("Deserialization failed");
-
-                println!("Page count is : {}", body.page_count);
 
                 Ok(body.page_count)
             },
