@@ -118,9 +118,11 @@ impl fmt::Display for PldCard {
     }
 }
 
-pub fn sort_by_section(cards: Vec<PldCard>) -> HashMap<String, HashMap<String, Vec<PldCard>>> {
+pub fn sort_by_section(mut cards: Vec<PldCard>) -> HashMap<String, HashMap<String, Vec<PldCard>>> {
     let mut output: HashMap<String, HashMap<String, Vec<PldCard>>> = HashMap::new();
 
+    cards.sort_by_key(|card| card.name.clone());
+    
     for card in cards {
         output.entry(card.section.clone()).or_default()
             .entry(card.sub_section.clone()).or_default().push(card);
