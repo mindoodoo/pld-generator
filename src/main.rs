@@ -41,8 +41,6 @@ async fn main() -> Result<(), Box<dyn Error>> {
         None => parse_config("./generator_config.toml")
     }.ok_or("Configuration parsing failed")?;
 
-    println!("Config is: {:#?}", conf);
-    
     let mut app = App::new(conf, &args.output)?;
     app.run().await?;
 

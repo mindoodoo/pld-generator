@@ -105,11 +105,19 @@ impl App {
 
         writeln!(images_buf, r#"<p align="center">"#).unwrap();
 
+        let height = match &self.conf.doc.image_height {
+            Some(h) => format!("height = {}", h),
+            None => "".to_string()
+        };
+
+        let width = match &self.conf.doc.image_width {
+            Some(w) => format!("width = {}", w),
+            None => "".to_string()
+        };
+
         for path in image_paths {
-            writeln!(images_buf, "  <img src=\"{}\" height={} width={}/>\n  <br></br>",
-                path,
-                self.conf.doc.image_height.clone().unwrap_or("".into()),
-                self.conf.doc.image_width.clone().unwrap_or("".into())).unwrap();
+            writeln!(images_buf, "  <img src=\"{}\" {} {}/>\n  <br></br>",
+                path, width, height).unwrap();
         }
 
         write!(images_buf, "</p>").unwrap();
@@ -136,13 +144,16 @@ impl App {
         let mut cards_buf = Vec::new();
 
         for (section_name, sub_section_map) in sorted_cards {
-            write!(cards_buf, "### {}\n\n", section_name).unwrap();
+            write!(cards_buf, "<center>\n  <h2>{}</h2>\n</center>\n\n", section_name).unwrap();
 
-            for (subsection_name, sub_section_cards) in sub_section_map {
-                write!(cards_buf, "#### {}\n\n", subsection_name).unwrap();
+            for (subsection_name, sub_section_cards) in sub_section_map.iter() {
+                write!(cards_buf, "### {}\n\n<hr style=\"height: 3px\">\n\n", subsection_name).unwrap();
 
-                for card in sub_section_cards {
-                    write!(cards_buf, "##### {}\n\n", card).unwrap();
+                for (i, card) in sub_section_cards.iter().enumerate() {
+
+                    let separator = if i == sub_section_cards.len() - 1 { "" } else { "<hr style=\"height: 1px\">\n\n" };
+
+                    write!(cards_buf, "#### {}\n\n{}", card, separator).unwrap();
                 }
             }
         }
