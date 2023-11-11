@@ -24,7 +24,7 @@ pub struct DocumentSettings {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct Config {
     pub github: GithubConfig,
-    pub lucid: LucidConfig,
+    pub lucid: Option<LucidConfig>,
     #[serde(rename = "document-settings")]
     pub doc: DocumentSettings,
     #[serde(skip)]

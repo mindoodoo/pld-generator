@@ -35,7 +35,7 @@ pub struct App {
     output_file: File,
     output_buffer: String,
     conf: Config,
-    lucid_client: LucidClient,
+    lucid_client: Option<LucidClient>,
     projects_client: ProjectsClient
 }
 
@@ -56,12 +56,14 @@ impl App {
                 .map_err(|_| GeneratorError::InvalidOutputDirectory)?,
             output_buffer: fs::read_to_string("./template.md")
                 .map_err(|_| GeneratorError::TemplateError)?,
-            lucid_client: LucidClient::new(
-                &conf.lucid.access_token,
-                &conf.lucid.refresh_token,
-                &conf.lucid.client_id,
-                &conf.lucid.client_secret
-            ),
+            lucid_client: if let Some(lucid_conf) = conf.lucid.as_ref() {
+                Some(LucidClient::new(
+                    &lucid_conf.access_token,
+                    &lucid_conf.refresh_token,
+                    &lucid_conf.client_id,
+                    &lucid_conf.client_secret
+                ))
+            } else { None },
             projects_client: ProjectsClient::new(&conf.github.api_key, conf.github.project_number),
             conf,
         })
@@ -69,12 +71,16 @@ impl App {
 
     /// Checks if lucid token is valid and attempts to update token if not
     async fn ensure_lucid_token_validity(&mut self) -> Result<(), GeneratorError> {
-        if !(self.lucid_client.check_access_token(&self.conf.lucid.access_token).await) {
-            let (new_access, new_refresh) = self.lucid_client.refresh_token().await
+        // Any lucid related functions should not be called if lucid conf or lucid client is None
+        let lucid_conf = self.conf.lucid.as_mut().unwrap();
+        let lucid_client = self.lucid_client.as_mut().unwrap();
+
+        if !(lucid_client.check_access_token(&lucid_conf.access_token).await) {
+            let (new_access, new_refresh) = lucid_client.refresh_token().await
                 .map_err(|_| GeneratorError::LucidInvalidRefreshToken)?;
 
-            self.conf.lucid.access_token = new_access;
-            self.conf.lucid.refresh_token = new_refresh;
+            lucid_conf.access_token = new_access;
+            lucid_conf.refresh_token = new_refresh;
         }
 
         Ok(())
@@ -82,6 +88,10 @@ impl App {
 
     /// Downloads all images to the output directory and writes the diagram of the deliverables
     async fn write_images_md(&mut self) {
+        // Any lucid related functions should not be called if lucid conf or lucid client is None
+        let lucid_conf = self.conf.lucid.as_mut().unwrap();
+        let lucid_client = self.lucid_client.as_mut().unwrap();
+        
         let mut image_paths = Vec::new();
         let mut images_buf = Vec::new();
 
@@ -89,7 +99,7 @@ impl App {
             return;
         }
 
-        let n_pages = self.lucid_client.get_page_count(&self.conf.lucid.document_id).await
+        let n_pages = lucid_client.get_page_count(&lucid_conf.document_id).await
             .expect("Error querying document page number lucid chart");
 
         for page in 1..=n_pages {
@@ -97,7 +107,7 @@ impl App {
             let image_path = format!("images/{}.png", page.to_string());
             dest.push(&image_path);
 
-            self.lucid_client.export_image(dest.to_str().unwrap(), &self.conf.lucid.document_id, page).await
+            lucid_client.export_image(dest.to_str().unwrap(), &lucid_conf.document_id, page).await
                 .expect("Error downloading image");
 
             image_paths.push(image_path);
@@ -163,9 +173,11 @@ impl App {
 
     /// Run generator
     pub async fn run(&mut self) -> Result<(), GeneratorError> {
-        self.ensure_lucid_token_validity().await?;
+        if self.lucid_client.is_some() {
+            self.ensure_lucid_token_validity().await?;
 
-        self.write_images_md().await;
+            self.write_images_md().await;
+        }
 
         self.write_cards().await;
         
