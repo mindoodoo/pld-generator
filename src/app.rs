@@ -138,18 +138,19 @@ impl App {
 
     async fn write_cards(&mut self) {
         let cards: Vec<PldCard> = self.projects_client.get_cards().await.iter()
-            .map(|card| {
-                let parsed_card = PldCard::new(card);
+            .filter_map(|card| {
+                match PldCard::new(card) {
+                    Err(_) => {
+                        println!("{}Skipping card \"{}\" due to parsing failure.", "WARNING: ".yellow(), card.name.yellow());
 
-                if parsed_card.is_err() {
-                    println!("{} Skipping card \"{}\" due to parsing failure.", "WARNING: ".yellow(), card.name.yellow());
+                        None
+                    },
+                    Ok(x) => Some(x)
                 }
-                
-                parsed_card
-            })
-            .filter(|card| card.is_ok())
-            .map(|card| card.unwrap()).collect();
+            }).collect();
+        println!("{}", "Cards are fetched and sorted".red());
         let sorted_cards = sort_by_section(cards);
+
 
         let mut cards_buf = Vec::new();
 
