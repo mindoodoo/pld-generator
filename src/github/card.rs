@@ -42,8 +42,8 @@ impl<'de> Deserialize<'de> for ProjectCard {
         struct Node {
             content: Content,
             working_days: WorkingDays,
-            section: Section,
-            sub_section: SubSection
+            section: Option<Section>,
+            sub_section: Option<SubSection>
         }
 
         let helper = Node::deserialize(deserializer)?;
@@ -51,9 +51,13 @@ impl<'de> Deserialize<'de> for ProjectCard {
         Ok(ProjectCard {
             name: helper.content.title,
             content: helper.content.body,
-            section: helper.section.name,
+            section: if let Some(section) = helper.section {
+                section.name
+            } else { "".to_string() },
             working_days: helper.working_days.number,
-            sub_section: helper.sub_section.name
+            sub_section: if let Some(subsection) = helper.sub_section {
+                subsection.name
+            } else { "".to_string() }
         })
     }
 }
