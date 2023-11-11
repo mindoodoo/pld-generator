@@ -1,4 +1,5 @@
 use serde::{self, Deserialize};
+use colored::Colorize;
 
 /// Structure representing one card on the project
 #[derive(Debug)]
@@ -49,15 +50,21 @@ impl<'de> Deserialize<'de> for ProjectCard {
         let helper = Node::deserialize(deserializer)?;
 
         Ok(ProjectCard {
-            name: helper.content.title,
+            name: helper.content.title.clone(),
             content: helper.content.body,
             section: if let Some(section) = helper.section {
                 section.name
-            } else { "".to_string() },
+            } else {
+                println!("{} Card \"{}\" has no {}", "WARNING:".yellow(), &helper.content.title.blue(), "Section".red());
+                "".to_string()
+            },
             working_days: helper.working_days.number,
             sub_section: if let Some(subsection) = helper.sub_section {
                 subsection.name
-            } else { "".to_string() }
+            } else { 
+                println!("{} Card \"{}\" has no {}", "WARNING:".yellow(), helper.content.title.blue(), "Sub-section".red());
+                "".to_string()
+            }
         })
     }
 }
