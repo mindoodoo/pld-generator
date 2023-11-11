@@ -112,7 +112,8 @@ impl fmt::Display for PldCard {
         write!(f, "**I want to:** {}\n\n", self.wish.action)?;
 
         write!(f, "**Description**\n\n{}\n\n", &self.description)?;
-        write!(f, "**Definition of Done**\n\n{}", self.dod)?;
+        write!(f, "**Definition of Done**\n\n{}\n\n", self.dod)?;
+        write!(f, "**Working days :** {}", self.working_days)?;
 
         Ok(())
     }
