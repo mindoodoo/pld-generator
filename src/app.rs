@@ -139,6 +139,10 @@ impl App {
     async fn write_cards(&mut self) {
         let cards: Vec<PldCard> = self.projects_client.get_cards().await.iter()
             .filter_map(|card| {
+                if card.working_days == 0.0 {
+                    return None;
+                }
+
                 match PldCard::new(card) {
                     Err(_) => {
                         println!("{}Skipping card \"{}\" due to parsing failure.", "WARNING: ".yellow(), card.name.yellow());
@@ -148,7 +152,6 @@ impl App {
                     Ok(x) => Some(x)
                 }
             }).collect();
-        println!("{}", "Cards are fetched and sorted".red());
         let sorted_cards = sort_by_section(cards);
 
 
