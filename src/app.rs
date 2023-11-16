@@ -181,6 +181,9 @@ impl App {
             self.ensure_lucid_token_validity().await?;
 
             self.write_images_md().await;
+        } else {
+            // Remove the lucid tag
+            self.output_buffer = self.output_buffer.replace(LUCID_TAG, "");
         }
 
         self.write_cards().await;
