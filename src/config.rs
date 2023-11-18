@@ -26,7 +26,7 @@ pub struct Config {
     pub github: GithubConfig,
     pub lucid: Option<LucidConfig>,
     #[serde(rename = "document-settings")]
-    pub doc: DocumentSettings,
+    pub doc: Option<DocumentSettings>,
     #[serde(skip)]
     pub path: String
 }

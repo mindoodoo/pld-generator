@@ -115,15 +115,21 @@ impl App {
 
         writeln!(images_buf, r#"<p align="center">"#).unwrap();
 
-        let height = match &self.conf.doc.image_height {
-            Some(h) => format!("height = {}", h),
-            None => "".to_string()
-        };
+        let (width, height) = if self.conf.doc.is_some() {
+            let doc_settings = self.conf.doc.as_ref().unwrap();
 
-        let width = match &self.conf.doc.image_width {
-            Some(w) => format!("width = {}", w),
-            None => "".to_string()
-        };
+            let height = match &doc_settings.image_height {
+                Some(h) => format!("height = {}", h),
+                None => "".to_string()
+            };
+    
+            let width = match &doc_settings.image_width {
+                Some(w) => format!("width = {}", w),
+                None => "".to_string()
+            };
+
+            (width, height)
+        } else { ("".to_string(), "".to_string()) };
 
         for path in image_paths {
             writeln!(images_buf, "  <img src=\"{}\" {} {}/>\n  <br></br>",
