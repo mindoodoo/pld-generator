@@ -1,11 +1,13 @@
 use std::{path::PathBuf, fs::{self, File}, fmt::Display, io::Write, error::Error};
 use colored::Colorize;
+use regress::{Regex, Flags};
 
 use crate::{config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}};
 
 // Tags
 const LUCID_TAG: &str = "{{lucid}}";
 const CARDS_TAG: &str = "{{cards}}";
+const TOC_TAG: &str = "{{table_of_contents}}";
 
 #[derive(Debug)]
 pub enum GeneratorError {
@@ -181,6 +183,40 @@ impl App {
         self.output_buffer = self.output_buffer.replace(CARDS_TAG, &String::from_utf8(cards_buf).unwrap());
     }
 
+    fn write_table_of_contents(&mut self) {
+        const MD_HEADER_REGEX: &str = r"^#+\s.*$";
+        const FLAGS: Flags = Flags {
+            icase: true,
+            multiline: true,
+            dot_all: false,
+            no_opt: false,
+            unicode: false
+        };
+
+        let headers_regex = Regex::with_flags(MD_HEADER_REGEX, FLAGS).unwrap();
+
+        let toc_items: Vec<String> = headers_regex.find_iter(&self.output_buffer).filter_map(|m| {
+            let match_str = &self.output_buffer[m.range];
+
+            let header_level = match_str.chars().take_while(|c| *c == '#' && *c != '\n').count();
+            let match_str = &match_str[header_level..].trim();
+
+            if header_level == 1 {
+                return None
+            }
+
+            let mut link = match_str.replace(".", "").replace(" ", "-").to_ascii_lowercase();
+            let toc_entry = format!("{indentation}- [{title}](#{link})",
+                indentation = "  ".repeat(header_level - 2),
+                title = match_str.to_string()
+            );
+
+            Some(toc_entry)
+        }).collect();
+
+        self.output_buffer = self.output_buffer.replace(TOC_TAG, &toc_items.join("\n"));
+    }
+
     /// Run generator
     pub async fn run(&mut self) -> Result<(), GeneratorError> {
         if self.lucid_client.is_some() {
@@ -193,6 +229,8 @@ impl App {
         }
 
         self.write_cards().await;
+        
+        self.write_table_of_contents();
         
         self.output_file.write(self.output_buffer.as_bytes()).map_err(|_| GeneratorError::WriteFailed)?;
 

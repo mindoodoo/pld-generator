@@ -4,6 +4,10 @@
 
 ## Table of Revisions
 
+## Table of Contents
+
+{{table_of_contents}}
+
 ## Diagram of the Deliverables
 
 {{lucid}}

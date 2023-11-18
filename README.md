@@ -10,10 +10,11 @@ In order to generate the PLD, the pld-generator uses a template (default is temp
 
 The following tags are supported :
 
-| **Tag** | **Description**       |
-| ------- | --------------------- |
-| lucid   | Lucid chart diagrams  |
-| cards   | Github projects cards |
+| **Tag**           | **Description**              |
+| ----------------- | ---------------------------- |
+| lucid             | Lucid chart diagrams         |
+| cards             | Github projects cards        |
+| table_of_contents | Table of contents with links |
 
 In order to be parsed correctly, tags must be surrounded by two pairs of curly braces such as `{{cards}}`.
 
@@ -22,7 +23,7 @@ In order to be parsed correctly, tags must be surrounded by two pairs of curly b
 By default, the `pld-generator` searches for a `generator_config.toml` in the current directory.
 The config accepts the following options.
 
-| **Mandatory**      | **Key**             | **Description**                                      |
+|   **Mandatory**    | **Key**             | **Description**                                      |
 | :----------------: | ------------------- | ---------------------------------------------------- |
 | :white_check_mark: | github_api_key      | Fine grained token                                   |
 | :white_check_mark: | project_number      | Github projects number                               |
