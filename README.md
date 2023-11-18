@@ -34,6 +34,25 @@ The config accepts the following options.
 |                    | image_width         | Specify image width for lucid diagrams               |
 |                    | image_height        | Specify image height for lucid diagrams              |
 
+Here is the expected config format :
+
+```toml
+[github]
+api_key = <github api key>
+project_number = <project number on github>
+
+[document-settings] # Optional
+image_width = <optional image width for lucid chart>    # Optional
+image_height = <optional image height for lucid chart>  # Optional
+
+[lucid] # Optional
+lucid_client_id = <lucid OAuth client ID>
+lucid_client_secret = <lucid OAuth client secret>
+lucid_access_token = <lucid access token generated through OAuth2 process>
+lucid_refresh_token = <lucid refresh token generated through OAuth2 process>
+document_id = <lucid document id>
+```
+
 ### Github token
 
 You must provide a **fine grained** personal access token with the following permissions :
