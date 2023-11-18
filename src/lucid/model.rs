@@ -69,6 +69,8 @@ pub struct GetDocumentResponse {
     pub last_modified_user_id: i64,
     pub custom_tags: Vec<String>,
     pub product: String,
-    pub status: String,
-    pub parent: Value,
+    pub status: Option<String>,
+    pub parent: Option<Value>,
+    pub customTags: Option<Vec<String>>,
+    pub trashed: Option<bool>
 }

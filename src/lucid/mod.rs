@@ -121,6 +121,7 @@ impl LucidClient {
         let resp = self.client.get(&query_str)
             .header("Authorization", &format!("Bearer {}", self.access_token))
             .header("Accept", "application/json")
+            .header("Lucid-Api-Version", "1")
             .send().await.unwrap();
 
         match resp.status() {
