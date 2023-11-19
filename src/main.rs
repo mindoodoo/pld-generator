@@ -3,6 +3,7 @@ mod parsing;
 mod lucid;
 mod app;
 mod config;
+mod image_cropping;
 
 use app::App;
 use clap::Parser;

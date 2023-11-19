@@ -2,7 +2,7 @@ use std::{path::PathBuf, fs::{self, File}, fmt::Display, io::Write, error::Error
 use colored::Colorize;
 use regress::{Regex, Flags};
 
-use crate::{config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}};
+use crate::{config::Config, lucid::LucidClient, github::ProjectsClient, parsing::{PldCard, sort_by_section}, image_cropping::crop_image};
 
 // Tags
 const LUCID_TAG: &str = "{{lucid}}";
@@ -111,6 +111,7 @@ impl App {
 
             lucid_client.export_image(dest.to_str().unwrap(), &lucid_conf.document_id, page).await
                 .expect("Error downloading image");
+            crop_image(&image_path);
 
             image_paths.push(image_path);
         }

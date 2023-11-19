@@ -56,21 +56,5 @@ pub struct RefreshResponse {
 #[derive(Deserialize)]
 #[serde(rename_all = "camelCase")]
 pub struct GetDocumentResponse {
-    pub document_id: String,
-    pub title: String,
-    pub edit_url: String,
-    pub view_url: String,
-    pub version: i64,
     pub page_count: u8,
-    pub can_edit: bool,
-    pub created: String,
-    pub creator_id: i64,
-    pub last_modified: String,
-    pub last_modified_user_id: i64,
-    pub custom_tags: Vec<String>,
-    pub product: String,
-    pub status: Option<String>,
-    pub parent: Option<Value>,
-    pub customTags: Option<Vec<String>>,
-    pub trashed: Option<bool>
 }
