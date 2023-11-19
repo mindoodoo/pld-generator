@@ -1,4 +1,4 @@
-use std::{collections::HashMap, fmt};
+use std::{collections::BTreeMap, fmt};
 
 use regress::{Regex, Flags};
 
@@ -119,8 +119,8 @@ impl fmt::Display for PldCard {
     }
 }
 
-pub fn sort_by_section(mut cards: Vec<PldCard>) -> HashMap<String, HashMap<String, Vec<PldCard>>> {
-    let mut output: HashMap<String, HashMap<String, Vec<PldCard>>> = HashMap::new();
+pub fn sort_by_section(mut cards: Vec<PldCard>) -> BTreeMap<String, BTreeMap<String, Vec<PldCard>>> {
+    let mut output: BTreeMap<String, BTreeMap<String, Vec<PldCard>>> = BTreeMap::new();
 
     cards.sort_by_key(|card| card.name.clone());
     

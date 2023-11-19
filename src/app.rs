@@ -163,7 +163,6 @@ impl App {
             }).collect();
         let sorted_cards = sort_by_section(cards);
 
-
         let mut cards_buf = Vec::new();
 
         for (section_name, sub_section_map) in sorted_cards {
