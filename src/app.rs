@@ -111,9 +111,9 @@ impl App {
 
             lucid_client.export_image(dest.to_str().unwrap(), &lucid_conf.document_id, page).await
                 .expect("Error downloading image");
-            crop_image(&image_path);
+            crop_image(&dest);
 
-            image_paths.push(image_path);
+            image_paths.push(dest);
         }
 
         writeln!(images_buf, r#"<p align="center">"#).unwrap();
@@ -136,7 +136,7 @@ impl App {
 
         for path in image_paths {
             writeln!(images_buf, "  <img src=\"{}\" {} {}/>\n  <br></br>",
-                path, width, height).unwrap();
+                path.to_string_lossy(), width, height).unwrap();
         }
 
         write!(images_buf, "</p>").unwrap();

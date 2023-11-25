@@ -1,3 +1,5 @@
+use std::path::Path;
+
 use image::{DynamicImage, GenericImageView, Rgba, Rgb};
 
 const WHITE: Rgba<u8> = Rgba([255, 255, 255, 255]);
@@ -55,8 +57,11 @@ fn get_bottom_right_corner(img: &DynamicImage) -> (u32, u32) {
     (corner_x, corner_y)
 }
 
-pub fn crop_image(image_path: &str) {
-    let img: DynamicImage = image::open(image_path).unwrap();
+pub fn crop_image<P>(image_path: P)
+where
+    P: AsRef<Path>
+{
+    let img: DynamicImage = image::open(&image_path).unwrap();
 
     let (top_x, top_y) = get_top_left_corner(&img);
     let (bottom_x, bottom_y) = get_bottom_right_corner(&img);
