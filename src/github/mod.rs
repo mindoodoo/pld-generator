@@ -3,7 +3,8 @@ pub mod card;
 use card::{ProjectCard, ProjectItems};
 
 use serde::Serialize;
-use reqwest::{ClientBuilder, Client, header::{HeaderMap, HeaderValue}};
+use reqwest::{ClientBuilder, Client, header::{HeaderMap, HeaderValue}, StatusCode};
+use colored::Colorize;
 
 const ENDPOINT: &str = "https://api.github.com/graphql";
 
@@ -93,12 +94,21 @@ impl ProjectsClient {
             .replace("$PROJECT", &self.project.to_string())
             .replace("$CARD_COUNT", &100.to_string());
 
-        let json_resp: serde_json::Value = self.client.post(ENDPOINT)
+        let resp = self.client.post(ENDPOINT)
             .json(&GqlQuery { query: query_str })
             .send()
-            .await.expect("Error sending cards graphql request")
-            .json::<serde_json::Value>()
+            .await.expect("Error sending cards graphql request");
+        let status = resp.status();
+        
+        let json_resp: serde_json::Value = resp.json::<serde_json::Value>()
             .await.expect("Error deserializing cards json response");
+
+        if status != StatusCode::OK {
+            println!("{}", "Error while fetching the github cards, this is most likely an authentication issue.".to_string().red());
+            println!("Error message : {}", json_resp["message"].to_string());
+
+            return Vec::new()
+        }
 
         let parsed_resp: ProjectItems = serde_json::from_value(
             json_resp["data"]["organization"]["projectV2"]["items"].clone()
