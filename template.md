@@ -12,6 +12,17 @@
 
 {{lucid}}
 
+## Beta Plan
+
+- Signin
+- Signup
+- Pairing a Device
+- Looking at Device Data
+- Looking at Plant Progress
+- Calendar to view upcoming events
+- Light/Dark Theme
+- Password Recovery
+
 ## Cards
 
 {{cards}}
