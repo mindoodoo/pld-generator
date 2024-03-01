@@ -275,7 +275,7 @@ impl App {
                     return None;
                 }
 
-                let mut link = match_str
+                let link = match_str
                     .replace(".", "")
                     .replace(" ", "-")
                     .to_ascii_lowercase();

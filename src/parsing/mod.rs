@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt};
+use std::{collections::BTreeMap, fmt, str::FromStr};
 
 use regress::{Flags, Regex};
 
@@ -7,7 +7,7 @@ use crate::github::card::ProjectCard;
 // Section parsing regex's
 const USER_WISH_REGEX: &str = r"(?<=^# *User wish$\s+)\S(?:.|\s)*?(?=\n+# *Description)";
 const DESCRIPTION_REGEX: &str = r"(?<=^# *Description$\s+)\S(?:\s|.)*?(?=\s+# *DOD)";
-const DOD_REGEX: &str = r"(?<=^# *DOD$\s+)\S(?:\s|.)*\S$";
+const DOD_REGEX: &str = r"(?<=^# *DOD$\s+)\S(?:\n|.)*\S$";
 
 // User wish parsing regex's
 const USER_WISH_INTERIOR: &str =
@@ -83,6 +83,8 @@ pub struct PldCard {
     pub description: String,
     pub dod: String,
     pub working_days: f32,
+    pub assignees: Vec<String>,
+    pub status: String,
 }
 
 impl PldCard {
@@ -114,19 +116,50 @@ impl PldCard {
             description,
             dod,
             working_days: card_resp.working_days,
+            assignees: Self::map_assignees(card_resp.assignees.clone()),
+            status: card_resp.status.clone(),
         })
+    }
+
+    fn map_assignees(a: Vec<String>) -> Vec<String> {
+        a.iter()
+            .map(|e| {
+                match e.as_str() {
+                    "Nydragon" => "Nicolas Lattemann",
+                    "mindoodoo" => "Léon Sautour",
+                    "limeal" => "Paul Gazeau-Rousseau",
+                    "RaizorZawarudo" => "Mickeal Reiss",
+                    "theCaptain136" => "Pablo Herrmann",
+                    _ => e,
+                }
+                .into()
+            })
+            .collect()
     }
 }
 
 impl fmt::Display for PldCard {
     fn fmt(&self, f: &mut fmt::Formatter<'_>) -> fmt::Result {
-        write!(f, "{}\n\n", &self.name)?;
+        let status: String = format!(
+            "<p style=\"color: {};\">{}</p>",
+            match self.status.as_str() {
+                "Done" => "green",
+                "In Progress" => "blue",
+                "Todo" => "grey",
+                "Blocked" => "red",
+                _ => "black",
+            },
+            self.status
+        );
+
+        write!(f, "{} {status}\n\n", &self.name.trim())?;
         write!(f, "**As a:** {}\n\n", self.wish.user)?;
         write!(f, "**I want to:** {}\n\n", self.wish.action)?;
 
         write!(f, "**Description**\n\n{}\n\n", &self.description)?;
         write!(f, "**Definition of Done**\n\n{}\n\n", self.dod)?;
-        write!(f, "**Working days :** {}", self.working_days)?;
+        write!(f, "**Working days :** {}\n\n", self.working_days)?;
+        write!(f, "**Assignees :** {}", self.assignees.join(", "))?;
 
         Ok(())
     }
