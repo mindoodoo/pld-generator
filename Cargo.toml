@@ -17,4 +17,3 @@ tokio = { version = "1.32.0", features = ["macros", "rt-multi-thread"] }
 toml = "0.7.6"
 
 [profile.release]
-debug = true

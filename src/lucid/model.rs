@@ -1,11 +1,10 @@
 use serde::{Deserialize, Serialize};
-use serde_json::Value;
 
 #[derive(Serialize)]
 pub struct IntrospectBody {
     pub token: String,
     pub client_id: String,
-    pub client_secret: String
+    pub client_secret: String,
 }
 
 #[derive(Deserialize)]
@@ -21,14 +20,14 @@ pub struct IntrospectOk {
 
 #[derive(Deserialize)]
 pub struct IntrospectErr {
-    pub active: bool
+    pub active: bool,
 }
 
 #[derive(Deserialize)]
 #[serde(untagged)]
 pub enum IntrospectResponse {
     Success(IntrospectOk),
-    Error(IntrospectErr)
+    Error(IntrospectErr),
 }
 
 #[derive(Serialize)]
@@ -37,7 +36,7 @@ pub struct RefreshBody {
     pub client_id: String,
     pub client_secret: String,
     /// Always `refresh_token`
-    pub grant_type: String
+    pub grant_type: String,
 }
 
 #[derive(Deserialize)]
