@@ -1,14 +1,14 @@
-mod github;
-mod parsing;
-mod lucid;
 mod app;
 mod config;
+mod github;
 mod image_cropping;
+mod lucid;
+mod parsing;
 
 use app::App;
 use clap::Parser;
 use config::Config;
-use std::{fs::File, io::Read, error::Error};
+use std::{error::Error, fs::File, io::Read};
 use tokio;
 
 #[derive(Parser, Debug)]
@@ -19,7 +19,7 @@ struct Args {
     pub output: String,
     /// Alternative config file path, if unset will default to ./generator_config.toml
     #[arg(short, long)]
-    pub conf: Option<String>
+    pub conf: Option<String>,
 }
 
 fn parse_config(path: &str) -> Option<Config> {
@@ -36,11 +36,12 @@ fn parse_config(path: &str) -> Option<Config> {
 #[tokio::main]
 async fn main() -> Result<(), Box<dyn Error>> {
     let args = Args::parse();
-    
+
     let conf = match args.conf {
         Some(path) => parse_config(&path),
-        None => parse_config("./generator_config.toml")
-    }.ok_or("Configuration parsing failed")?;
+        None => parse_config("./generator_config.toml"),
+    }
+    .ok_or("Configuration parsing failed")?;
 
     let mut app = App::new(conf, &args.output)?;
     app.run().await?;

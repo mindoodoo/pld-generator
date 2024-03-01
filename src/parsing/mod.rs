@@ -1,6 +1,6 @@
 use std::{collections::BTreeMap, fmt};
 
-use regress::{Regex, Flags};
+use regress::{Flags, Regex};
 
 use crate::github::card::ProjectCard;
 
@@ -10,7 +10,8 @@ const DESCRIPTION_REGEX: &str = r"(?<=^# *Description$\s+)\S(?:\s|.)*?(?=\s+# *D
 const DOD_REGEX: &str = r"(?<=^# *DOD$\s+)\S(?:\s|.)*\S$";
 
 // User wish parsing regex's
-const USER_WISH_INTERIOR: &str = r"\*\*as the:\*\*\s+?(.+?$)(?:\s)+?\*\*i want to:\*\*((?:.|\s)+.+)";
+const USER_WISH_INTERIOR: &str =
+    r"\*\*as the:\*\*\s+?(.+?$)(?:\s)+?\*\*i want to:\*\*((?:.|\s)+.+)";
 
 // Flags to be used
 const FLAGS: Flags = Flags {
@@ -18,14 +19,14 @@ const FLAGS: Flags = Flags {
     multiline: true,
     dot_all: false,
     no_opt: false,
-    unicode: false
+    unicode: false,
 };
 
 #[derive(Debug)]
 pub enum CardSection {
     UserWish,
     Description,
-    Dod
+    Dod,
 }
 
 #[derive(Debug)]
@@ -33,29 +34,41 @@ pub enum ParsingError {
     SectionMissing(CardSection),
     SectionContainsHeader(CardSection),
     SectionMissingInformation(CardSection),
-    TooManyMatches(CardSection)
+    TooManyMatches(CardSection),
 }
 
 /// This is the first part of the card
-/// 
+///
 /// > As the `user`, I want to `action`
 #[derive(Debug)]
 pub struct UserWish {
     pub user: String,
-    pub action: String
+    pub action: String,
 }
 
 impl UserWish {
     pub fn from_markdown(user_wish: &str) -> Result<UserWish, ParsingError> {
         let user_regex = Regex::with_flags(USER_WISH_INTERIOR, FLAGS).unwrap();
-        
-        let matches = user_regex.find(user_wish).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
-        let user_group = matches.group(1).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
-        let action_group = matches.group(2).ok_or(ParsingError::SectionMissingInformation(CardSection::UserWish))?;
-        
+
+        let matches = user_regex
+            .find(user_wish)
+            .ok_or(ParsingError::SectionMissingInformation(
+                CardSection::UserWish,
+            ))?;
+        let user_group = matches
+            .group(1)
+            .ok_or(ParsingError::SectionMissingInformation(
+                CardSection::UserWish,
+            ))?;
+        let action_group = matches
+            .group(2)
+            .ok_or(ParsingError::SectionMissingInformation(
+                CardSection::UserWish,
+            ))?;
+
         Ok(UserWish {
             user: user_wish[user_group].trim().to_string(),
-            action: user_wish[action_group].trim().to_string()
+            action: user_wish[action_group].trim().to_string(),
         })
     }
 }
@@ -69,7 +82,7 @@ pub struct PldCard {
     pub wish: UserWish,
     pub description: String,
     pub dod: String,
-    pub working_days: f32
+    pub working_days: f32,
 }
 
 impl PldCard {
@@ -80,17 +93,17 @@ impl PldCard {
 
         let wish = match user_wish_regex.find(&card_resp.content) {
             Some(m) => UserWish::from_markdown(&card_resp.content[m.range])?,
-            None => return Err(ParsingError::SectionMissing(CardSection::UserWish))
+            None => return Err(ParsingError::SectionMissing(CardSection::UserWish)),
         };
 
         let description = match description_regex.find(&card_resp.content) {
             Some(m) => (&card_resp.content[m.range]).trim().to_string(),
-            None => return Err(ParsingError::SectionMissing(CardSection::Description))
+            None => return Err(ParsingError::SectionMissing(CardSection::Description)),
         };
 
         let dod = match dod_regex.find(&card_resp.content) {
             Some(m) => (&card_resp.content[m.range]).trim().to_string(),
-            None => return Err(ParsingError::SectionMissing(CardSection::Dod))
+            None => return Err(ParsingError::SectionMissing(CardSection::Dod)),
         };
 
         Ok(PldCard {
@@ -100,7 +113,7 @@ impl PldCard {
             wish,
             description,
             dod,
-            working_days: card_resp.working_days
+            working_days: card_resp.working_days,
         })
     }
 }
@@ -119,14 +132,20 @@ impl fmt::Display for PldCard {
     }
 }
 
-pub fn sort_by_section(mut cards: Vec<PldCard>) -> BTreeMap<String, BTreeMap<String, Vec<PldCard>>> {
+pub fn sort_by_section(
+    mut cards: Vec<PldCard>,
+) -> BTreeMap<String, BTreeMap<String, Vec<PldCard>>> {
     let mut output: BTreeMap<String, BTreeMap<String, Vec<PldCard>>> = BTreeMap::new();
 
     cards.sort_by_key(|card| card.name.clone());
-    
+
     for card in cards {
-        output.entry(card.section.clone()).or_default()
-            .entry(card.sub_section.clone()).or_default().push(card);
+        output
+            .entry(card.section.clone())
+            .or_default()
+            .entry(card.sub_section.clone())
+            .or_default()
+            .push(card);
     }
 
     output

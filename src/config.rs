@@ -3,7 +3,7 @@ use serde::{Deserialize, Serialize};
 #[derive(Debug, Deserialize, Serialize)]
 pub struct GithubConfig {
     pub api_key: String,
-    pub project_number: u8
+    pub project_number: u8,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -18,7 +18,7 @@ pub struct LucidConfig {
 #[derive(Debug, Deserialize, Serialize)]
 pub struct DocumentSettings {
     pub image_width: Option<String>,
-    pub image_height: Option<String>
+    pub image_height: Option<String>,
 }
 
 #[derive(Debug, Deserialize, Serialize)]
@@ -28,5 +28,5 @@ pub struct Config {
     #[serde(rename = "document-settings")]
     pub doc: Option<DocumentSettings>,
     #[serde(skip)]
-    pub path: String
+    pub path: String,
 }
