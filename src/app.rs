@@ -2,7 +2,7 @@ use colored::Colorize;
 use regress::{Flags, Regex};
 use std::{
     error::Error,
-    fmt::Display,
+    fmt::{Debug, Display},
     fs::{self, File},
     io::Write,
     path::PathBuf,
@@ -306,6 +306,11 @@ impl App {
         self.write_cards().await;
 
         self.write_table_of_contents();
+
+        self.output_buffer = self.output_buffer.replace(
+            "{{date_now}}",
+            &format!("{}", chrono::offset::Local::now().format("%d/%m/%Y")),
+        );
 
         self.output_file
             .write(self.output_buffer.as_bytes())

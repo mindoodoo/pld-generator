@@ -63,7 +63,7 @@ impl<'de> Deserialize<'de> for ProjectCard {
             working_days: WorkingDays,
             section: Option<Section>,
             sub_section: Option<SubSection>,
-            assignees: Option<Assignees>,
+            _assignees: Option<Assignees>,
             status: Option<Status>,
         }
 

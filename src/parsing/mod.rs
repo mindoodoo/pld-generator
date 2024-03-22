@@ -1,4 +1,4 @@
-use std::{collections::BTreeMap, fmt, str::FromStr};
+use std::{collections::BTreeMap, fmt};
 
 use regress::{Flags, Regex};
 
@@ -32,9 +32,9 @@ pub enum CardSection {
 #[derive(Debug)]
 pub enum ParsingError {
     SectionMissing(CardSection),
-    SectionContainsHeader(CardSection),
+    _SectionContainsHeader(CardSection),
     SectionMissingInformation(CardSection),
-    TooManyMatches(CardSection),
+    _TooManyMatches(CardSection),
 }
 
 /// This is the first part of the card
